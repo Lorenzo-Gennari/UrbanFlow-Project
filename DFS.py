@@ -1,6 +1,8 @@
 from search_algorithm import SearchAlgorithm
 from queue import LifoQueue
 from search_algorithm import Node
+
+
 class DFS(SearchAlgorithm):
     """Depth First Search
 
@@ -10,4 +12,3 @@ class DFS(SearchAlgorithm):
 
     def solve(self, problem) -> list:
         raise NotImplementedError("To be implemented")
-

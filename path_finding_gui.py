@@ -1,4 +1,7 @@
+import time
+import click
 import pygame
+import json
 from path_finding import PathFinding
 from ASTAR import AStar as ASTARPathFinder
 from DFS import DFS as DFSPathFinder
@@ -21,6 +24,7 @@ PURPLE = (128, 0, 128)
 ORANGE = (255, 165, 0)
 GREY = (128, 128, 128)
 TURQUOISE = (64, 224, 208)
+
 
 class Spot:
     def __init__(self, row, col, width):
@@ -71,10 +75,12 @@ class Spot:
         self.color = PURPLE
 
     def draw(self, win):
-        pygame.draw.rect(win, self.color, (self.x, self.y, self.width, self.width))
+        pygame.draw.rect(
+            win, self.color, (self.x, self.y, self.width, self.width))
 
     def __str__(self):
         return "({},{})".format(self.row, self.col)
+
 
 def make_grid(rows, width):
     grid = []
@@ -87,6 +93,7 @@ def make_grid(rows, width):
 
     return grid
 
+
 def make_grid_from_file(filename, width):
     f = open(filename)
 
@@ -95,22 +102,22 @@ def make_grid_from_file(filename, width):
     rows = data['rows']
     grid = []
     gap = width // rows
-    
-    start = (data['start'][0],data['start'][1])
-    end = (data['end'][0],data['end'][1])
-    
-    barrier = {(ele[0],ele[1]) for ele in data['barrier']}
-    
+
+    start = (data['start'][0], data['start'][1])
+    end = (data['end'][0], data['end'][1])
+
+    barrier = {(ele[0], ele[1]) for ele in data['barrier']}
+
     for i in range(rows):
         grid.append([])
         for j in range(rows):
             spot = Spot(i, j, gap)
-            if (i,j) in barrier:
+            if (i, j) in barrier:
                 spot.make_barrier()
-            elif (i,j) == start:
+            elif (i, j) == start:
                 spot.make_start()
                 start = spot
-            elif (i,j) == end:
+            elif (i, j) == end:
                 spot.make_end()
                 end = spot
             grid[i].append(spot)
@@ -134,7 +141,7 @@ def draw(win, grid, rows, width):
             spot.draw(win)
 
     draw_grid(win, rows, width)
-    
+
     save_map_button.show()
 
     pygame.display.update()
@@ -149,35 +156,40 @@ def get_clicked_pos(pos, rows, width):
 
     return row, col
 
+
 def mark_spots(start, grid, plan):
-    
+
     x = start.row
     y = start.col
     for a in plan:
         if a == 'N':
-            y+=1
+            y += 1
         elif a == 'S':
-            y-=1
+            y -= 1
         elif a == 'E':
-            x+=1
+            x += 1
         elif a == 'W':
-            x-=1
-        grid[x][y].make_path()         
+            x -= 1
+        grid[x][y].make_path()
+
 
 def mark_expanded(exp, grid):
     for e in exp:
         grid[e[0]][e[1]].make_closed()
-import json
+
+
 def save_to_file(grid, start, end, filename="temp.json"):
     barrier = list()
     for x in grid:
         for spot in x:
             if spot.is_barrier():
-                barrier.append((spot.row,spot.col))
-    res = {"rows":len(grid), "start": (start.row,start.col), "end": (end.row,end.col), "barrier":barrier}
-    data = json.dumps(res,indent=4)
-    with open(filename,"w") as data_file:
+                barrier.append((spot.row, spot.col))
+    res = {"rows": len(grid), "start": (start.row, start.col),
+           "end": (end.row, end.col), "barrier": barrier}
+    data = json.dumps(res, indent=4)
+    with open(filename, "w") as data_file:
         data_file.write(data)
+
 
 def load_from_file(filename):
     f = open(filename)
@@ -187,31 +199,32 @@ def load_from_file(filename):
     rows = data['rows']
     grid = []
     gap = width // rows
-    
-    start = (data['start'][0],data['start'][1])
-    end = (data['end'][0],data['end'][1])
-    
-    barrier = {(ele[0],ele[1]) for ele in data['barrier']}
-    
+
+    start = (data['start'][0], data['start'][1])
+    end = (data['end'][0], data['end'][1])
+
+    barrier = {(ele[0], ele[1]) for ele in data['barrier']}
+
     for i in range(rows):
         grid.append([])
         for j in range(rows):
             spot = Spot(i, j, gap)
-            if (i,j) in barrier:
+            if (i, j) in barrier:
                 spot.make_barrier()
-            elif (i,j) == start:
+            elif (i, j) == start:
                 spot.make_start()
                 start = spot
-            elif (i,j) == end:
+            elif (i, j) == end:
                 spot.make_end()
                 end = spot
             grid[i].append(spot)
 
     return grid, start, end, rows, barrier
 
+
 class Button:
     """Create a button, then blit the surface in the while loop"""
- 
+
     def __init__(self, text,  pos, font, bg="black", feedback=""):
         self.x, self.y = pos
         self.font = pygame.font.SysFont("Arial", font)
@@ -220,7 +233,7 @@ class Button:
         else:
             self.feedback = feedback
         self.change_text(text, bg)
- 
+
     def change_text(self, text, bg="black"):
         self.text = self.font.render(text, 1, pygame.Color("White"))
         self.size = self.text.get_size()
@@ -228,10 +241,10 @@ class Button:
         self.surface.fill(bg)
         self.surface.blit(self.text, (0, 0))
         self.rect = pygame.Rect(self.x, self.y, self.size[0], self.size[1])
- 
+
     def show(self):
         WIN.blit(self.surface, (self.x, self.y))
- 
+
     def click(self, event, grid, start, end):
         x, y = pygame.mouse.get_pos()
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -239,7 +252,8 @@ class Button:
                 if self.rect.collidepoint(x, y):
                     if grid is not None and start is not None and end is not None:
                         save_to_file(grid, start, end, "tempmap.json")
-                        self.change_text(self.feedback, bg="red")  
+                        self.change_text(self.feedback, bg="red")
+
 
 save_map_button = Button(
     "Save Map",
@@ -256,14 +270,14 @@ load_map_button = Button(
     feedback="Loaded")
 
 clock = pygame.time.Clock()
-import click
-import time
+
+
 @click.command()
-@click.option('-w', '--width', default = WIDTH-200, help = "Width of the Windows")
-@click.option('-r', '--rows', default = 50, help = "Number of rows/columns in the map")
-@click.option('-s', '--search_algorithm', default = "ASTAR", help = "Search algorithm to be used")
-@click.option('-f', '--filename', default = None, help = "Initialize map with data from file")
-def main(width, rows, search_algorithm, filename = None):
+@click.option('-w', '--width', default=WIDTH-200, help="Width of the Windows")
+@click.option('-r', '--rows', default=50, help="Number of rows/columns in the map")
+@click.option('-s', '--search_algorithm', default="ASTAR", help="Search algorithm to be used")
+@click.option('-f', '--filename', default=None, help="Initialize map with data from file")
+def main(width, rows, search_algorithm, filename=None):
     win = WIN
     start = None
     end = None
@@ -271,21 +285,21 @@ def main(width, rows, search_algorithm, filename = None):
     if search_algorithm == 'DFS':
         search_algorithm = DFSPathFinder(True)
     elif search_algorithm == 'ASTAR':
-        search_algorithm = ASTARPathFinder(heuristics.manhattan,True)
+        search_algorithm = ASTARPathFinder(heuristics.manhattan, True)
     elif search_algorithm == 'ASTARW4':
-        search_algorithm = ASTARPathFinder(heuristics.manhattan,True, w = 4)
+        search_algorithm = ASTARPathFinder(heuristics.manhattan, True, w=4)
     elif search_algorithm == 'BRFS':
         search_algorithm = BRFSPathFinder(True)
     if filename is not None:
-        grid, start, end, rows, wall = make_grid_from_file(filename,width) 
+        grid, start, end, rows, wall = make_grid_from_file(filename, width)
     else:
         grid = make_grid(rows, width)
         wall = set()
     run = True
-    
+
     while run:
         draw(win, grid, rows, width)
-        
+
         for event in pygame.event.get():
             pygame.display.update()
             if event.type == pygame.QUIT:
@@ -300,39 +314,41 @@ def main(width, rows, search_algorithm, filename = None):
                     if not start and spot != end:
                         start = spot
                         start.make_start()
-                        
+
                     elif not end and spot != start:
                         end = spot
                         end.make_end()
 
                     elif spot != end and spot != start:
                         spot.make_barrier()
-                        wall.add((row,col))
+                        wall.add((row, col))
 
-            elif pygame.mouse.get_pressed()[2]: # RIGHT
+            elif pygame.mouse.get_pressed()[2]:  # RIGHT
                 pos = pygame.mouse.get_pos()
                 if pos[0] < width and pos[1] < width:
                     row, col = get_clicked_pos(pos, rows, width)
                     spot = grid[row][col]
                     spot.reset()
-                    wall.remove((row,col))
+                    wall.remove((row, col))
                     if spot == start:
                         start = None
                     elif spot == end:
                         end = None
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and start and end:
-                    world = World(rows-1,rows-1,wall)
-                    p = PathFinding((start.row,start.col),(end.row,end.col),world)
+                    world = World(rows-1, rows-1, wall)
+                    p = PathFinding((start.row, start.col),
+                                    (end.row, end.col), world)
                     now = time.time()
                     plan = search_algorithm.solve(p)
                     now = time.time() - now
-                    print("Number of Expansion: {} in {} seconds".format(search_algorithm.expanded,now))
+                    print("Number of Expansion: {} in {} seconds".format(
+                        search_algorithm.expanded, now))
                     mark_expanded(search_algorithm.expanded_states, grid)
                     if plan is not None:
                         print(plan)
                         print("Cost of the plan is: {}".format(len(plan)))
-                        mark_spots(start,grid,plan)
+                        mark_spots(start, grid, plan)
                     draw(win, grid, rows, width)
                 if event.key == pygame.K_c:
                     start = None
@@ -341,6 +357,7 @@ def main(width, rows, search_algorithm, filename = None):
                     wall = set()
 
     pygame.quit()
+
 
 if __name__ == '__main__':
     main()

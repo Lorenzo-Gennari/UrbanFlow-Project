@@ -9,6 +9,6 @@ class BrFS(SearchAlgorithm):
     Args:
         Solver (_type_): This is an implementation for the Solver class
     """
+
     def solve(self, problem) -> list:
         raise NotImplementedError("To be implemented")
-
