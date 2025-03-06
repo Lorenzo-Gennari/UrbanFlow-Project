@@ -11,4 +11,23 @@ class BrFS(SearchAlgorithm):
     """
 
     def solve(self, problem) -> list:
-        raise NotImplementedError("To be implemented")
+        node = Node(problem.init, None, None, 0)
+        reached = set()
+        reached.add(node.state)
+        frontier = Queue()
+        frontier.put(node)
+        while not frontier.empty():
+            node = frontier.get()
+            reached.add(node.state)
+            print("current node: ", node.state)
+            states = problem.getSuccessors(node.state)
+            for state in states:
+                child_node = Node(state[1], node, state[0], 0)
+                print("action: ", child_node.action)
+                if child_node.state not in reached:
+                    if problem.isGoal(child_node.state):
+                        print("goal node: ", child_node.state)
+                        return print(self.extract_solution(child_node))
+                    else:
+                        print("not goal node: ", child_node.state)
+                        frontier.put(child_node)

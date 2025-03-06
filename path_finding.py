@@ -17,13 +17,21 @@ class PathFinding(SearchProblem):
         succ = set()
         for a in self.actions:
             if a == 'S':
-                next = (state[0], state[1]-1)
+                x = state[0]
+                y = state[1]+1
+                next = (x, y)
             elif a == 'N':
-                next = (state[0], state[1]+1)
+                x = state[0]
+                y = state[1]-1
+                next = (x, y)
             elif a == 'W':
-                next = (state[0]-1, state[1])
+                x = state[0]-1
+                y = state[1]
+                next = (x, y)
             elif a == 'E':
-                next = (state[0]+1, state[1])
+                x = state[0]+1
+                y = state[1]
+                next = (x, y)
             if next not in self.world.walls and self.isInTheLimits(next):
                 succ.add((a, next))
         return succ
