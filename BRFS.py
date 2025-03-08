@@ -19,7 +19,6 @@ class BrFS(SearchAlgorithm):
         while not frontier.empty():
             node = frontier.get()
             self.update_expanded(node.state)
-            print("current node: ", node.state)
             states = problem.getSuccessors(node.state)
             for state in states:
                 child_node = Node(state[1], node, state[0], 0)
