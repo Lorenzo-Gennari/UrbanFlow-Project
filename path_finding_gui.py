@@ -340,11 +340,11 @@ def main(width, rows, search_algorithm, filename=None):
                     p = PathFinding((start.row, start.col),
                                     (end.row, end.col), world)
                     now = time.time()
-                    plan, nodes = search_algorithm.solve(p)
+                    plan, nodes = search_algorithm.solve(
+                        p, win, grid, rows, width, draw)
                     now = time.time() - now
                     print("Number of Expansion: {} in {} seconds".format(
                         search_algorithm.expanded, now))
-                    mark_expanded(search_algorithm.expanded_states, grid)
                     if plan is not None:
                         print(plan)
                         print("Cost of the plan is: {}".format(len(plan)))
