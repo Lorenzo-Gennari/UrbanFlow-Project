@@ -30,5 +30,6 @@ class BrFS(SearchAlgorithm):
                         return (self.extract_solution(child_node), reached)
                     else:
                         frontier.put(child_node)
-                        grid[node.state[0]][node.state[1]].make_closed()
+                        if node.parent is not None:
+                            grid[node.state[0]][node.state[1]].make_closed()
                     func(win, grid, rows, width)
