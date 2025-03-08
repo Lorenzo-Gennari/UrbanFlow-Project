@@ -10,7 +10,7 @@ class BrFS(SearchAlgorithm):
         Solver (_type_): This is an implementation for the Solver class
     """
 
-    def solve(self, problem) -> list:
+    def solve(self, problem) -> (list, set):
         node = Node(problem.init, None, None, 0)
         reached = set()
         reached.add(node.state)
@@ -19,6 +19,7 @@ class BrFS(SearchAlgorithm):
         while not frontier.empty():
             node = frontier.get()
             reached.add(node.state)
+            self.update_expanded(node.state)
             print("current node: ", node.state)
             states = problem.getSuccessors(node.state)
             for state in states:
@@ -27,7 +28,7 @@ class BrFS(SearchAlgorithm):
                 if child_node.state not in reached:
                     if problem.isGoal(child_node.state):
                         print("goal node: ", child_node.state)
-                        return print(self.extract_solution(child_node))
+                        return (self.extract_solution(child_node), reached)
                     else:
                         print("not goal node: ", child_node.state)
                         frontier.put(child_node)

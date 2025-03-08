@@ -18,11 +18,11 @@ class PathFinding(SearchProblem):
         for a in self.actions:
             if a == 'S':
                 x = state[0]
-                y = state[1]+1
+                y = state[1]-1
                 next = (x, y)
             elif a == 'N':
                 x = state[0]
-                y = state[1]-1
+                y = state[1]+1
                 next = (x, y)
             elif a == 'W':
                 x = state[0]-1
