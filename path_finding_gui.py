@@ -340,7 +340,7 @@ def main(width, rows, search_algorithm, filename=None):
                     p = PathFinding((start.row, start.col),
                                     (end.row, end.col), world)
                     now = time.time()
-                    plan, nodes = search_algorithm.solve(
+                    plan = search_algorithm.solve(
                         p, win, grid, rows, width, draw)
                     now = time.time() - now
                     print("Number of Expansion: {} in {} seconds".format(
