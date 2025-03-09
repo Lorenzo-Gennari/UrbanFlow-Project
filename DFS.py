@@ -10,26 +10,25 @@ class DFS(SearchAlgorithm):
         Solver (_type_): This is an implementation for the Solver class
     """
 
-    def solve(self, problem, win, grid, rows, width, func) -> list:
+    def solve(self, problem, draw, grid) -> list:
         node = Node(problem.init, None, None, 0)
         reached = set()
+        reached.add(node.state)
         frontier = LifoQueue()
         frontier.put(node)
-        reached.add(node.state)
         while not frontier.empty():
             node = frontier.get()
+            self.update_expanded(node.state)
+            if problem.isGoal(node.state):
+                print("goal node: ", node.state)
+                return self.extract_solution(node)
             states = problem.getSuccessors(node.state)
             for state in states:
                 child_node = Node(state[1], node, state[0], 0)
-                if child_node.state not in reached and child_node not in list(frontier.queue):
+                if child_node.state not in reached:
                     reached.add(child_node.state)
-                    self.update_expanded(child_node.state)
                     grid[state[1][0]][state[1][1]].make_open()
-                    if problem.isGoal(child_node.state):
-                        print("goal node: ", child_node.state)
-                        return self.extract_solution(child_node)
-                    else:
-                        frontier.put(child_node)
-                        if node.parent is not None:
-                            grid[node.state[0]][node.state[1]].make_closed()
-                    func(win, grid, rows, width)
+                    frontier.put(child_node)
+            if node.parent is not None:
+                grid[node.state[0]][node.state[1]].make_closed()
+            draw()

@@ -9,12 +9,12 @@ from world import World
 
 class PathFinding(SearchProblem):
     def __init__(self, init, goal, world: World):
-        self.actions = ['N', 'S', 'W', 'E']
+        self.actions = ['W', 'E', 'S', 'N']
         self.world = world
         super().__init__(init, goal, [(a, 1) for a in self.actions])
 
     def getSuccessors(self, state) -> set:
-        succ = set()
+        succ = []
         for a in self.actions:
             if a == 'S':
                 x = state[0]
@@ -33,7 +33,7 @@ class PathFinding(SearchProblem):
                 y = state[1]
                 next = (x, y)
             if next not in self.world.walls and self.isInTheLimits(next):
-                succ.add((a, next))
+                succ.append((a, next))
         return succ
 
     def isInTheLimits(self, state):

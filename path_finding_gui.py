@@ -341,7 +341,7 @@ def main(width, rows, search_algorithm, filename=None):
                                     (end.row, end.col), world)
                     now = time.time()
                     plan = search_algorithm.solve(
-                        p, win, grid, rows, width, draw)
+                        p, lambda: draw(win, grid, rows, width), grid)
                     now = time.time() - now
                     print("Number of Expansion: {} in {} seconds".format(
                         search_algorithm.expanded, now))

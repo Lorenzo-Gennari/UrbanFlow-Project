@@ -10,7 +10,7 @@ class BrFS(SearchAlgorithm):
         Solver (_type_): This is an implementation for the Solver class
     """
 
-    def solve(self, problem, win, grid, rows, width, func) -> list:
+    def solve(self, problem, draw, grid) -> list:
         node = Node(problem.init, None, None, 0)
         reached = set()
         reached.add(node.state)
@@ -30,6 +30,6 @@ class BrFS(SearchAlgorithm):
                         return self.extract_solution(child_node)
                     else:
                         frontier.put(child_node)
-                        if node.parent is not None:
-                            grid[node.state[0]][node.state[1]].make_closed()
-                    func(win, grid, rows, width)
+            if node.parent is not None:
+                grid[node.state[0]][node.state[1]].make_closed()
+            draw()
