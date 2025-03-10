@@ -37,7 +37,7 @@ class AStar(SearchAlgorithm):
             states = problem.getSuccessors(node.state)
             for state in states:
                 child_node = AstarNode(
-                    state[1], node, state[0], 0, manhattan(node.state, problem.goal))
+                    state[1], node, state[0], 0, manhattan(state[1], problem.goal))
                 if child_node.state not in reached:
                     self.update_expanded(child_node.state)
                     grid[state[1][0]][state[1][1]].make_open()
