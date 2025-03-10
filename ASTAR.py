@@ -1,7 +1,7 @@
 from search_algorithm import SearchAlgorithm
 from queue import PriorityQueue
 from search_algorithm import Node
-from heuristics import manhattan
+import heuristics as h
 
 
 class AstarNode(Node):
@@ -29,7 +29,7 @@ class AStar(SearchAlgorithm):
         frontier = PriorityQueue()
         reached = set()
         node = AstarNode(problem.init, None, None, 0,
-                         manhattan(problem.init, problem.goal))
+                         h.chebyshev(problem.init, problem.goal))
         frontier.put(node)
         reached.add(node.state)
         while not frontier.empty():
@@ -37,7 +37,7 @@ class AStar(SearchAlgorithm):
             states = problem.getSuccessors(node.state)
             for state in states:
                 child_node = AstarNode(
-                    state[1], node, state[0], 0, manhattan(state[1], problem.goal))
+                    state[1], node, state[0], 0, h.chebyshev(state[1], problem.goal))
                 if child_node.state not in reached:
                     self.update_expanded(child_node.state)
                     grid[state[1][0]][state[1][1]].make_open()
