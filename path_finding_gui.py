@@ -170,6 +170,18 @@ def mark_spots(start, grid, plan):
             x += 1
         elif a == 'W':
             x -= 1
+        elif a == 'NE':
+            x += 1
+            y += 1
+        elif a == 'NW':
+            x -= 1
+            y += 1
+        elif a == 'SE':
+            x += 1
+            y -= 1
+        elif a == 'SW':
+            x -= 1
+            y -= 1
         grid[x][y].make_path()
 
 

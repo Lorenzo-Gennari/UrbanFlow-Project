@@ -9,7 +9,7 @@ from world import World
 
 class PathFinding(SearchProblem):
     def __init__(self, init, goal, world: World):
-        self.actions = ['W', 'E', 'S', 'N']
+        self.actions = ['W', 'E', 'S', 'N', 'NE', 'NW', 'SE', 'SW']
         self.world = world
         super().__init__(init, goal, [(a, 1) for a in self.actions])
 
@@ -31,6 +31,22 @@ class PathFinding(SearchProblem):
             elif a == 'E':
                 x = state[0]+1
                 y = state[1]
+                next = (x, y)
+            elif a == 'NE':
+                x = state[0]+1
+                y = state[1]+1
+                next = (x, y)
+            elif a == 'NW':
+                x = state[0]-1
+                y = state[1]+1
+                next = (x, y)
+            elif a == 'SE':
+                x = state[0]+1
+                y = state[1]-1
+                next = (x, y)
+            elif a == 'SW':
+                x = state[0]-1
+                y = state[1]-1
                 next = (x, y)
             if next not in self.world.walls and self.isInTheLimits(next):
                 succ.append((a, next))
