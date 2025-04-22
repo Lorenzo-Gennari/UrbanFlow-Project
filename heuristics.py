@@ -1,6 +1,17 @@
 import numpy as np
 
 
+def choose_heuristic(he, start, end) -> int:
+    if he == "m":
+        return manhattan(start, end)
+    elif he == "c":
+        return chebyshev(start, end)
+    elif he == "e":
+        return eucledian(start, end)
+    elif he == "b":
+        return blind(start, end)
+
+
 def manhattan(start, goal) -> int:
     return abs(start[0]-goal[0]) + abs(start[1]-goal[1])
 

@@ -25,11 +25,11 @@ class AStar(SearchAlgorithm):
         self.w = w
         super().__init__(view)
 
-    def solve(self, problem, draw, grid) -> list:
+    def solve(self, problem, draw, grid, he="m") -> list:
         frontier = PriorityQueue()
         reached = set()
         node = AstarNode(problem.init, None, None, 0,
-                         h.chebyshev(problem.init, problem.goal))
+                         h.choose_heuristic(he, problem.init, problem.goal))
         frontier.put(node)
         reached.add(node.state)
         while not frontier.empty():
@@ -37,7 +37,7 @@ class AStar(SearchAlgorithm):
             states = problem.getSuccessors(node.state)
             for state in states:
                 child_node = AstarNode(
-                    state[1], node, state[0], 0, h.chebyshev(state[1], problem.goal))
+                    state[1], node, state[0], 0, h.choose_heuristic(he, state[1], problem.goal))
                 if child_node.state not in reached:
                     self.update_expanded(child_node.state)
                     grid[state[1][0]][state[1][1]].make_open()

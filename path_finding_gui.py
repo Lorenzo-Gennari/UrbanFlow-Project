@@ -6,7 +6,6 @@ from path_finding import PathFinding
 from ASTAR import AStar as ASTARPathFinder
 from DFS import DFS as DFSPathFinder
 from BRFS import BrFS as BRFSPathFinder
-import heuristics
 from world import World
 
 WIDTH = 1000
@@ -143,6 +142,9 @@ def draw(win, grid, rows, width):
     draw_grid(win, rows, width)
 
     save_map_button.show()
+    manhattan.show()
+    chebyshev.show()
+    euclidean.show()
 
     pygame.display.update()
 
@@ -234,6 +236,36 @@ def load_from_file(filename):
     return grid, start, end, rows, barrier
 
 
+# Variabile per tracciare l'euristica selezionata
+selected_heuristic = None
+
+
+def update_selected_heuristic(event, search_algorithm):
+    global selected_heuristic
+
+    # Controlla se un bottone è stato cliccato e aggiorna l'euristica
+    heuristic_selected = manhattan.click(event, search_algorithm, "m")
+    if heuristic_selected:
+        selected_heuristic = heuristic_selected
+        # Deselect the other button
+        chebyshev.change_text("chebyshev", bg="navy")
+        euclidean.change_text("eucledian", bg="navy")
+
+    heuristic_selected = chebyshev.click(event, search_algorithm, "c")
+    if heuristic_selected:
+        selected_heuristic = heuristic_selected
+        # Deselect the other button
+        manhattan.change_text("manhattan", bg="navy")
+        euclidean.change_text("eucledian", bg="navy")
+
+    heuristic_selected = euclidean.click(event, search_algorithm, "e")
+    if heuristic_selected:
+        selected_heuristic = heuristic_selected
+        # Deselect the other button
+        manhattan.change_text("manhattan", bg="navy")
+        chebyshev.change_text("chebyshev", bg="navy")
+
+
 class Button:
     """Create a button, then blit the surface in the while loop"""
 
@@ -257,7 +289,7 @@ class Button:
     def show(self):
         WIN.blit(self.surface, (self.x, self.y))
 
-    def click(self, event, grid, start, end):
+    def click_save(self, event, grid, start, end):
         x, y = pygame.mouse.get_pos()
         if event.type == pygame.MOUSEBUTTONDOWN:
             if pygame.mouse.get_pressed()[0]:
@@ -265,6 +297,16 @@ class Button:
                     if grid is not None and start is not None and end is not None:
                         save_to_file(grid, start, end, "tempmap.json")
                         self.change_text(self.feedback, bg="red")
+
+    def click(self, event, search_algorithm, heuristic_type):
+        x, y = pygame.mouse.get_pos()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if pygame.mouse.get_pressed()[0]:
+                if self.rect.collidepoint(x, y):
+                    search_algorithm.heuristic = heuristic_type
+                    self.change_text(self.feedback, bg="red")
+                    return heuristic_type  # Return the selected heuristic
+        return None
 
 
 save_map_button = Button(
@@ -274,12 +316,26 @@ save_map_button = Button(
     bg="navy",
     feedback="Saved")
 
-load_map_button = Button(
-    "Load Map",
+manhattan = Button(
+    "manhattan",
     (WIDTH-200, 200),
     font=20,
     bg="navy",
-    feedback="Loaded")
+    feedback="manhattan <=")
+
+chebyshev = Button(
+    "chebyshev",
+    (WIDTH-200, 250),
+    font=20,
+    bg="navy",
+    feedback="chebyshev <=")
+
+euclidean = Button(
+    "euclidean",
+    (WIDTH-200, 300),
+    font=20,
+    bg="navy",
+    feedback="euclidean <=")
 
 clock = pygame.time.Clock()
 
@@ -297,9 +353,9 @@ def main(width, rows, search_algorithm, filename=None):
     if search_algorithm == 'DFS':
         search_algorithm = DFSPathFinder(True)
     elif search_algorithm == 'ASTAR':
-        search_algorithm = ASTARPathFinder(heuristics.manhattan, True)
+        search_algorithm = ASTARPathFinder("m", True)
     elif search_algorithm == 'ASTARW4':
-        search_algorithm = ASTARPathFinder(heuristics.manhattan, True, w=4)
+        search_algorithm = ASTARPathFinder("m", True, w=4)
     elif search_algorithm == 'BRFS':
         search_algorithm = BRFSPathFinder(True)
     if filename is not None:
@@ -316,7 +372,8 @@ def main(width, rows, search_algorithm, filename=None):
             pygame.display.update()
             if event.type == pygame.QUIT:
                 run = False
-            save_map_button.click(event, grid, start, end)
+            save_map_button.click_save(event, grid, start, end)
+            update_selected_heuristic(event, search_algorithm)
 
             if pygame.mouse.get_pressed()[0]:  # LEFT
                 pos = pygame.mouse.get_pos()
@@ -353,10 +410,11 @@ def main(width, rows, search_algorithm, filename=None):
                                     (end.row, end.col), world)
                     now = time.time()
                     plan = search_algorithm.solve(
-                        p, lambda: draw(win, grid, rows, width), grid)
+                        p, lambda: draw(win, grid, rows, width), grid, search_algorithm.heuristic)
                     now = time.time() - now
                     print("Number of Expansion: {} in {} seconds".format(
                         search_algorithm.expanded, now))
+                    print(search_algorithm.heuristic)
                     if plan is not None:
                         print(plan)
                         print("Cost of the plan is: {}".format(len(plan)))
