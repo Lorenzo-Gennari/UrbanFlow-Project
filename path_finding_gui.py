@@ -235,19 +235,21 @@ def load_from_file(filename):
 
     return grid, start, end, rows, barrier
 
+
+# Variabile per tracciare l'euristica selezionata
+selected_heuristic = None
+
+
 def make_plan(p, draw, win, grid, rows, width, search_algorithm):
-    if search_algorithm == "ASTAR" or search_algorithm == "ASTARW4":
+    print(search_algorithm)
+    if isinstance(search_algorithm, ASTARPathFinder):
         plan = search_algorithm.solve(p, lambda: draw(
-            win, grid, rows, width), grid, search_algorithm.heuristic)
+            win, grid, rows, width), grid, selected_heuristic)
     else:
         plan = search_algorithm.solve(
             p, lambda: draw(win, grid, rows, width), grid)
 
     return plan
-
-
-# Variabile per tracciare l'euristica selezionata
-selected_heuristic = None
 
 
 def update_selected_heuristic(event, search_algorithm):
@@ -419,7 +421,8 @@ def main(width, rows, search_algorithm, filename=None):
                     p = PathFinding((start.row, start.col),
                                     (end.row, end.col), world)
                     now = time.time()
-                    plan = make_plan(p, draw, win, grid, rows, width, search_algorithm)
+                    plan = make_plan(p, draw, win, grid, rows,
+                                     width, search_algorithm)
                     now = time.time() - now
                     print("Number of Expansion: {} in {} seconds".format(
                         search_algorithm.expanded, now))

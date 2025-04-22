@@ -10,6 +10,7 @@ from world import World
 class PathFinding(SearchProblem):
     def __init__(self, init, goal, world: World):
         self.actions = ['W', 'E', 'S', 'N', 'NE', 'NW', 'SE', 'SW']
+        # self.actions = ['W', 'E', 'S', 'N']
         self.world = world
         super().__init__(init, goal, [(a, 1) for a in self.actions])
 

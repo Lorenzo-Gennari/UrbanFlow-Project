@@ -25,7 +25,8 @@ class AStar(SearchAlgorithm):
         self.w = w
         super().__init__(view)
 
-    def solve(self, problem, draw, grid, he="m") -> list:
+    def solve(self, problem, draw, grid, he) -> list:
+        print(he)
         frontier = PriorityQueue()
         reached = set()
         node = AstarNode(problem.init, None, None, 0,
