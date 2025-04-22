@@ -235,6 +235,16 @@ def load_from_file(filename):
 
     return grid, start, end, rows, barrier
 
+def make_plan(p, draw, win, grid, rows, width, search_algorithm):
+    if search_algorithm == "ASTAR" or search_algorithm == "ASTARW4":
+        plan = search_algorithm.solve(p, lambda: draw(
+            win, grid, rows, width), grid, search_algorithm.heuristic)
+    else:
+        plan = search_algorithm.solve(
+            p, lambda: draw(win, grid, rows, width), grid)
+
+    return plan
+
 
 # Variabile per tracciare l'euristica selezionata
 selected_heuristic = None
@@ -409,12 +419,10 @@ def main(width, rows, search_algorithm, filename=None):
                     p = PathFinding((start.row, start.col),
                                     (end.row, end.col), world)
                     now = time.time()
-                    plan = search_algorithm.solve(
-                        p, lambda: draw(win, grid, rows, width), grid, search_algorithm.heuristic)
+                    plan = make_plan(p, draw, win, grid, rows, width, search_algorithm)
                     now = time.time() - now
                     print("Number of Expansion: {} in {} seconds".format(
                         search_algorithm.expanded, now))
-                    print(search_algorithm.heuristic)
                     if plan is not None:
                         print(plan)
                         print("Cost of the plan is: {}".format(len(plan)))
