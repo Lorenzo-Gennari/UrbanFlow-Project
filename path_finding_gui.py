@@ -241,7 +241,6 @@ selected_heuristic = None
 
 
 def make_plan(p, draw, win, grid, rows, width, search_algorithm):
-    print(search_algorithm)
     if isinstance(search_algorithm, ASTARPathFinder):
         plan = search_algorithm.solve(p, lambda: draw(
             win, grid, rows, width), grid, selected_heuristic)
@@ -343,11 +342,11 @@ chebyshev = Button(
     feedback="chebyshev <=")
 
 euclidean = Button(
-    "euclidean",
+    "eucledian",
     (WIDTH-200, 300),
     font=20,
     bg="navy",
-    feedback="euclidean <=")
+    feedback="eucledian <=")
 
 clock = pygame.time.Clock()
 
