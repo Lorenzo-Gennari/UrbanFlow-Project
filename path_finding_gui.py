@@ -145,6 +145,7 @@ def draw(win, grid, rows, width):
     manhattan.show()
     chebyshev.show()
     euclidean.show()
+    blind.show()
 
     pygame.display.update()
 
@@ -261,6 +262,7 @@ def update_selected_heuristic(event, search_algorithm):
         # Deselect the other button
         chebyshev.change_text("chebyshev", bg="navy")
         euclidean.change_text("eucledian", bg="navy")
+        blind.change_text("blind", bg="navy")
 
     heuristic_selected = chebyshev.click(event, search_algorithm, "c")
     if heuristic_selected:
@@ -268,6 +270,7 @@ def update_selected_heuristic(event, search_algorithm):
         # Deselect the other button
         manhattan.change_text("manhattan", bg="navy")
         euclidean.change_text("eucledian", bg="navy")
+        blind.change_text("blind", bg="navy")
 
     heuristic_selected = euclidean.click(event, search_algorithm, "e")
     if heuristic_selected:
@@ -275,6 +278,15 @@ def update_selected_heuristic(event, search_algorithm):
         # Deselect the other button
         manhattan.change_text("manhattan", bg="navy")
         chebyshev.change_text("chebyshev", bg="navy")
+        blind.change_text("blind", bg="navy")
+
+    heuristic_selected = blind.click(event, search_algorithm, "b")
+    if heuristic_selected:
+        selected_heuristic = heuristic_selected
+        # Deselect the other button
+        manhattan.change_text("manhattan", bg="navy")
+        chebyshev.change_text("chebyshev", bg="navy")
+        euclidean.change_text("eucledian", bg="navy")
 
 
 class Button:
@@ -347,6 +359,13 @@ euclidean = Button(
     font=20,
     bg="navy",
     feedback="eucledian <=")
+
+blind = Button(
+    "blind",
+    (WIDTH-200, 350),
+    font=20,
+    bg="navy",
+    feedback="blind <=")
 
 clock = pygame.time.Clock()
 
