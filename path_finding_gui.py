@@ -6,6 +6,7 @@ from path_finding import PathFinding
 from ASTAR import AStar as ASTARPathFinder
 from DFS import DFS as DFSPathFinder
 from BRFS import BrFS as BRFSPathFinder
+from IDASTAR import IDAStar as IDASTARPathFinder
 from world import World
 
 WIDTH = 1000
@@ -238,11 +239,11 @@ def load_from_file(filename):
 
 
 # Variabile per tracciare l'euristica selezionata
-selected_heuristic = None
+selected_heuristic = "m"
 
 
 def make_plan(p, draw, win, grid, rows, width, search_algorithm):
-    if isinstance(search_algorithm, ASTARPathFinder):
+    if isinstance(search_algorithm, ASTARPathFinder) or isinstance(search_algorithm, IDASTARPathFinder):
         plan = search_algorithm.solve(p, lambda: draw(
             win, grid, rows, width), grid, selected_heuristic)
     else:
@@ -383,11 +384,13 @@ def main(width, rows, search_algorithm, filename=None):
     if search_algorithm == 'DFS':
         search_algorithm = DFSPathFinder(True)
     elif search_algorithm == 'ASTAR':
-        search_algorithm = ASTARPathFinder("m", True)
+        search_algorithm = ASTARPathFinder(True)
     elif search_algorithm == 'ASTARW4':
-        search_algorithm = ASTARPathFinder("m", True, w=4)
+        search_algorithm = ASTARPathFinder(True, w=4)
     elif search_algorithm == 'BRFS':
         search_algorithm = BRFSPathFinder(True)
+    elif search_algorithm == 'IDASTAR':
+        search_algorithm = IDASTARPathFinder(True)
     if filename is not None:
         grid, start, end, rows, wall = make_grid_from_file(filename, width)
     else:
