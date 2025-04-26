@@ -7,6 +7,7 @@ from path_finding import PathFinding
 from ASTAR import AStar as ASTARPathFinder
 from DFS import DFS as DFSPathFinder
 from BRFS import BrFS as BRFSPathFinder
+from IDASTAR import IDAStar as IDASTARPathFinder
 import heuristics
 from world import World
 
@@ -33,6 +34,7 @@ RADIUS = 4
 RED_TRANS = (255, 0, 0, 128)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
+GREEN_TRANS = (0, 255, 0, 128)
 BLUE = (0, 255, 0)
 YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
@@ -150,12 +152,8 @@ class Spot:
         # Se è un ostacolo (barriera)
         if self.is_barrier():
             s = pygame.Surface((self.width, self.width), pygame.SRCALPHA)
-            s.fill(RED_TRANS)
+            s.fill(GREEN_TRANS)
             win.blit(s, (self.x, self.y))
-            radar_pixel_size = RADAR_SIZE * cell_size
-            scaled_radar = pygame.transform.scale(
-                RADAR_IMAGE, (radar_pixel_size, radar_pixel_size))
-            win.blit(scaled_radar, (self.x-cell_size, self.y-cell_size))
 
         elif self.is_area():
             s = pygame.Surface((self.width, self.width), pygame.SRCALPHA)
@@ -278,6 +276,7 @@ def get_clicked_pos(pos, rows, width):
 
 
 def mark_spots(start, grid, plan):
+
     x = start.row
     y = start.col
     for a in plan:
@@ -289,6 +288,19 @@ def mark_spots(start, grid, plan):
             x += 1
         elif a == 'W':
             x -= 1
+        elif a == 'NE':
+            x += 1
+            y += 1
+        elif a == 'NW':
+            x -= 1
+            y += 1
+        elif a == 'SE':
+            x += 1
+            y -= 1
+        elif a == 'SW':
+            x -= 1
+            y -= 1
+        grid[x][y].make_path()
 
         if not grid[x][y].is_end():  # Evita di cambiare la base
             grid[x][y].make_path()
@@ -372,19 +384,6 @@ def mark_expanded(exp, grid):
         grid[e[0]][e[1]].make_closed()
 
 
-def mark_neighbors(grid, row, col, radius, wall):
-
-    for r in range(row - radius, row + radius + 1):  # Scansiona l'area quadrata attorno
-        for c in range(col - radius, col + radius + 1):
-            # Controlla che sia nella griglia
-            if 0 <= r < len(grid) and 0 <= c < len(grid[0]):
-                # Distanza Euclidea
-                distanza = math.sqrt((r - row) ** 2 + (c - col) ** 2)
-                if distanza <= radius:  # Controlla se è dentro il cerchio
-                    grid[r][c].make_area()
-                    wall.add((r, c))
-
-
 def save_to_file(grid, start, end, filename="temp.json"):
     barrier = list()
     for x in grid:
@@ -429,6 +428,58 @@ def load_from_file(filename):
     return grid, start, end, rows, barrier
 
 
+# Variabile per tracciare l'euristica selezionata
+selected_heuristic = "m"
+
+
+def make_plan(p, draw, win, grid, rows, width, search_algorithm):
+    if isinstance(search_algorithm, ASTARPathFinder) or isinstance(search_algorithm, IDASTARPathFinder):
+        plan = search_algorithm.solve(p, lambda: draw(
+            win, grid, rows, width), grid, selected_heuristic)
+    else:
+        plan = search_algorithm.solve(
+            p, lambda: draw(win, grid, rows, width), grid)
+
+    return plan
+
+
+def update_selected_heuristic(event, search_algorithm):
+    global selected_heuristic
+
+    # Controlla se un bottone è stato cliccato e aggiorna l'euristica
+    heuristic_selected = manhattan.click(event, search_algorithm, "m")
+    if heuristic_selected:
+        selected_heuristic = heuristic_selected
+        # Deselect the other button
+        chebyshev.change_text("chebyshev", bg="navy")
+        euclidean.change_text("eucledian", bg="navy")
+        blind.change_text("blind", bg="navy")
+
+    heuristic_selected = chebyshev.click(event, search_algorithm, "c")
+    if heuristic_selected:
+        selected_heuristic = heuristic_selected
+        # Deselect the other button
+        manhattan.change_text("manhattan", bg="navy")
+        euclidean.change_text("eucledian", bg="navy")
+        blind.change_text("blind", bg="navy")
+
+    heuristic_selected = euclidean.click(event, search_algorithm, "e")
+    if heuristic_selected:
+        selected_heuristic = heuristic_selected
+        # Deselect the other button
+        manhattan.change_text("manhattan", bg="navy")
+        chebyshev.change_text("chebyshev", bg="navy")
+        blind.change_text("blind", bg="navy")
+
+    heuristic_selected = blind.click(event, search_algorithm, "b")
+    if heuristic_selected:
+        selected_heuristic = heuristic_selected
+        # Deselect the other button
+        manhattan.change_text("manhattan", bg="navy")
+        chebyshev.change_text("chebyshev", bg="navy")
+        euclidean.change_text("eucledian", bg="navy")
+
+
 class Button:
     """Create a button, then blit the surface in the while loop"""
 
@@ -452,7 +503,7 @@ class Button:
     def show(self):
         WIN.blit(self.surface, (self.x, self.y))
 
-    def click(self, event, grid, start, end):
+    def click_save(self, event, grid, start, end):
         x, y = pygame.mouse.get_pos()
         if event.type == pygame.MOUSEBUTTONDOWN:
             if pygame.mouse.get_pressed()[0]:
@@ -460,6 +511,16 @@ class Button:
                     if grid is not None and start is not None and end is not None:
                         save_to_file(grid, start, end, "tempmap.json")
                         self.change_text(self.feedback, bg="red")
+
+    def click(self, event, search_algorithm, heuristic_type):
+        x, y = pygame.mouse.get_pos()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if pygame.mouse.get_pressed()[0]:
+                if self.rect.collidepoint(x, y):
+                    search_algorithm.heuristic = heuristic_type
+                    self.change_text(self.feedback, bg="red")
+                    return heuristic_type  # Return the selected heuristic
+        return None
 
 
 save_map_button = Button(
@@ -469,12 +530,33 @@ save_map_button = Button(
     bg="navy",
     feedback="Saved")
 
-load_map_button = Button(
-    "Load Map",
+manhattan = Button(
+    "manhattan",
     (WIDTH-200, 200),
     font=20,
     bg="navy",
-    feedback="Loaded")
+    feedback="manhattan <=")
+
+chebyshev = Button(
+    "chebyshev",
+    (WIDTH-200, 250),
+    font=20,
+    bg="navy",
+    feedback="chebyshev <=")
+
+euclidean = Button(
+    "eucledian",
+    (WIDTH-200, 300),
+    font=20,
+    bg="navy",
+    feedback="eucledian <=")
+
+blind = Button(
+    "blind",
+    (WIDTH-200, 350),
+    font=20,
+    bg="navy",
+    feedback="blind <=")
 
 clock = pygame.time.Clock()
 
@@ -497,10 +579,11 @@ def main(width, rows, search_algorithm, filename=None):
         search_algorithm = ASTARPathFinder(heuristics.manhattan, True, w=4)
     elif search_algorithm == 'BRFS':
         search_algorithm = BRFSPathFinder(True)
+    elif search_algorithm == 'IDASTAR':
+        search_algorithm = IDASTARPathFinder(True)
     if filename is not None:
         grid, start, end, rows, wall = make_grid_from_file(filename, width)
         for i in list(wall):
-            mark_neighbors(grid, i[0], i[1], RADIUS, wall)
             grid[i[0]][i[1]].make_barrier()
     else:
         grid = make_grid(rows, width)
@@ -514,7 +597,8 @@ def main(width, rows, search_algorithm, filename=None):
             pygame.display.update()
             if event.type == pygame.QUIT:
                 run = False
-            save_map_button.click(event, grid, start, end)
+            save_map_button.click_save(event, grid, start, end)
+            update_selected_heuristic(event, search_algorithm)
 
             if pygame.mouse.get_pressed()[0]:  # LEFT
                 pos = pygame.mouse.get_pos()
@@ -530,9 +614,8 @@ def main(width, rows, search_algorithm, filename=None):
                         end.make_end()
 
                     elif spot != end and spot != start:
-                        wall.add((row, col))
-                        mark_neighbors(grid, row, col, RADIUS, wall)
                         spot.make_barrier()
+                        wall.add((row, col))
 
             elif pygame.mouse.get_pressed()[2]:  # RIGHT
                 pos = pygame.mouse.get_pos()
@@ -552,8 +635,8 @@ def main(width, rows, search_algorithm, filename=None):
                     p = PathFinding((start.row, start.col),
                                     (end.row, end.col), world)
                     now = time.time()
-                    plan = search_algorithm.solve(
-                        p, lambda: draw(win, grid, rows, width), grid)
+                    plan = make_plan(p, draw, win, grid, rows,
+                                     width, search_algorithm)
                     now = time.time() - now
                     print("Number of Expansion: {} in {} seconds".format(
                         search_algorithm.expanded, now))
