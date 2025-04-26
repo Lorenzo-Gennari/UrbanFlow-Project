@@ -15,6 +15,12 @@ class SearchAlgorithm:
         self.expanded_states = set()
         self.view = view
 
+    def is_expanded(self, state):
+        if state in self.expanded_states:
+            return True
+        else:
+            return False
+
     def solve(self, problem: SearchProblem) -> list:
         raise Exception("Not implemented")
 
