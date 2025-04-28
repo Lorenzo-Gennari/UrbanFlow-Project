@@ -64,7 +64,7 @@ class Spot:
         self.end = False
 
         # Nuovo nuovo stato
-        self.rotation = 0
+        self.rotation = -90
 
         # Nuovo nuovo nuovo stato
         self.area = False
@@ -247,6 +247,7 @@ def draw_grid(win, rows, width):
 
 
 def draw(win, grid, rows, width):
+    win.fill(WHITE)
     win.blit(BACKGROUND_IMAGE, (0, 0))  # Disegna lo sfondo prima di tutto
 
     # Prima, disegna tutti gli spot normali (barriere, percorsi, nodi)
@@ -261,6 +262,11 @@ def draw(win, grid, rows, width):
                 spot.draw(win)
 
     # draw_grid(win, rows, width)
+    save_map_button.show()
+    manhattan.show()
+    chebyshev.show()
+    euclidean.show()
+    blind.show()
 
     pygame.display.update()  # Aggiorna la finestra solo alla fine
 
@@ -332,7 +338,6 @@ def animate_airplane(start, plan, grid, rows):
         if not grid[x][y].is_end():
             grid[x][y].reset()
 
-        # Muove l'aereo nella direzione corretta
         if move == 'N':
             y += 1
             if next_move == 'W':
@@ -562,7 +567,7 @@ clock = pygame.time.Clock()
 
 
 @click.command()
-@click.option('-w', '--width', default=WIDTH, help="Width of the Windows")
+@click.option('-w', '--width', default=WIDTH-200, help="Width of the Windows")
 @click.option('-r', '--rows', default=50, help="Number of rows/columns in the map")
 @click.option('-s', '--search_algorithm', default="ASTAR", help="Search algorithm to be used")
 @click.option('-f', '--filename', default=None, help="Initialize map with data from file")
@@ -629,6 +634,7 @@ def main(width, rows, search_algorithm, filename=None):
                         end = None
                     elif spot.is_barrier() or spot.is_area():
                         wall.remove((row, col))
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and start and end:
                     world = World(rows-1, rows-1, wall)
