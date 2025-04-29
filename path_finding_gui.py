@@ -1,4 +1,3 @@
-import math
 import time
 import click
 import pygame
@@ -16,25 +15,16 @@ WIN = pygame.display.set_mode((WIDTH, WIDTH))
 pygame.display.set_caption("Search Algorithm")
 pygame.init()
 
-BACKGROUND_IMAGE = pygame.image.load("mappa-colored.png")
-BACKGROUND_IMAGE = pygame.transform.scale(
-    BACKGROUND_IMAGE, (WIDTH-200, WIDTH-200))
-
 BASE_IMAGE = pygame.image.load("warehouse.png")
 BASE_SIZE = 3
 
 TRUCK_ICON = pygame.image.load("truck.png")
 TRUCK_SIZE = 3
 
-RADAR_IMAGE = pygame.image.load("radar.png")
-RADAR_SIZE = 3
-RADIUS = 4
-
-
 RED_TRANS = (255, 0, 0, 128)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
-GREEN_TRANS = (0, 255, 0, 128)
+GREEN_TRANS = (0, 255, 0, 10)
 BLUE = (0, 255, 0)
 YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
@@ -52,10 +42,9 @@ class Spot:
         self.col = col
         self.x = row * width
         self.y = col * width
-        self.color = WHITE  # Usa il colore solo per il rendering
+        self.color = WHITE
         self.width = width
 
-        # Nuovi stati booleani
         self.barrier = False
         self.closed = False
         self.open = False
@@ -63,16 +52,13 @@ class Spot:
         self.start = False
         self.end = False
 
-        # Nuovo nuovo stato
         self.rotation = -90
 
-        # Nuovo nuovo nuovo stato
         self.area = False
 
     def get_pos(self):
         return self.row, self.col
 
-    # Metodi corretti che controllano lo stato invece del colore
     def is_closed(self):
         return self.closed
 
@@ -94,7 +80,6 @@ class Spot:
     def is_area(self):
         return self.area
 
-    # Metodi per impostare gli stati
     def reset(self):
         self.color = WHITE
         self.barrier = False
@@ -147,9 +132,8 @@ class Spot:
             self.color = PURPLE
 
     def draw(self, win):
-        cell_size = WIDTH // 50  # Dimensione della cella
+        cell_size = WIDTH // 50
 
-        # Se è un ostacolo (barriera)
         if self.is_barrier():
             s = pygame.Surface((self.width, self.width), pygame.SRCALPHA)
             s.fill(GREEN_TRANS)
@@ -160,22 +144,18 @@ class Spot:
             s.fill(RED_TRANS)
             win.blit(s, (self.x, self.y))
 
-        # Se è un nodo aperto (verde)
         elif self.is_open():
             pygame.draw.rect(
                 win, GREEN, (self.x, self.y, self.width, self.width))
 
-        # Se è un nodo chiuso (rosso)
         elif self.is_closed():
             pygame.draw.rect(
                 win, RED, (self.x, self.y, self.width, self.width))
 
-        # Se è parte del percorso trovato (viola)
         elif self.is_path():
             pygame.draw.rect(
                 win, PURPLE, (self.x, self.y, self.width, self.width))
 
-        # Se è il punto di partenza (aereo)
         elif self.is_start():
             airplane_pixel_size = TRUCK_SIZE * cell_size
             scaled_airplane = pygame.transform.scale(
@@ -184,7 +164,6 @@ class Spot:
                 scaled_airplane, self.rotation)
             win.blit(scaled_airplane, (self.x-cell_size, self.y-cell_size))
 
-        # Se è la destinazione (base militare)
         elif self.is_end():
             base_pixel_size = BASE_SIZE * cell_size
             scaled_base = pygame.transform.scale(
@@ -221,6 +200,16 @@ def make_grid_from_file(filename, width):
 
     barrier = {(ele[0], ele[1]) for ele in data['barrier']}
 
+    background_image = None
+    if 'background' in data and data['background']:
+        try:
+            background_image = pygame.image.load(
+                data['background'])
+            background_image = pygame.transform.scale(
+                background_image, (WIDTH-200, WIDTH-200))
+        except pygame.error as e:
+            print(f"Errore nel caricare l'immagine di background: {e}")
+
     for i in range(rows):
         grid.append([])
         for j in range(rows):
@@ -235,7 +224,7 @@ def make_grid_from_file(filename, width):
                 end = spot
             grid[i].append(spot)
 
-    return grid, start, end, rows, barrier
+    return grid, start, end, rows, barrier, background_image
 
 
 def draw_grid(win, rows, width):
@@ -246,11 +235,11 @@ def draw_grid(win, rows, width):
             pygame.draw.line(win, GREY, (j * gap, 0), (j * gap, width))
 
 
-def draw(win, grid, rows, width):
+def draw(win, grid, rows, width, background=None):
     win.fill(WHITE)
-    win.blit(BACKGROUND_IMAGE, (0, 0))  # Disegna lo sfondo prima di tutto
+    if background:
+        win.blit(background, (0, 0))
 
-    # Prima, disegna tutti gli spot normali (barriere, percorsi, nodi)
     for row in grid:
         for spot in row:
             if not spot.is_start() and not spot.is_end():
@@ -261,14 +250,14 @@ def draw(win, grid, rows, width):
             if spot.is_start() or spot.is_end() or spot.is_barrier():
                 spot.draw(win)
 
-    # draw_grid(win, rows, width)
+    draw_grid(win, rows, width)
     save_map_button.show()
     manhattan.show()
     chebyshev.show()
     euclidean.show()
     blind.show()
 
-    pygame.display.update()  # Aggiorna la finestra solo alla fine
+    pygame.display.update()
 
 
 def get_clicked_pos(pos, rows, width):
@@ -312,29 +301,25 @@ def mark_spots(start, grid, plan):
             grid[x][y].make_path()
 
 
-def animate_airplane(start, plan, grid, rows):
-    cell_size = (WIDTH) // rows  # Dimensione di una cella in pixel
-    airplane_pixel_size = TRUCK_SIZE * cell_size  # Dimensione dell'aereo scalata
+def animate_truck(start, plan, grid, rows, background=None):
+    cell_size = (WIDTH-200) // rows
+    airplane_pixel_size = TRUCK_SIZE * cell_size
     scaled_airplane = pygame.transform.scale(
         TRUCK_ICON, (airplane_pixel_size, airplane_pixel_size))
 
-    # Rimuove la traccia dei nodi aperti
     for row in grid:
         for spot in row:
-            if spot.is_open() or spot.is_closed():  # Se era un nodo aperto
-                spot.reset()  # Resettalo
+            if spot.is_open() or spot.is_closed():
+                spot.reset()
 
-    # Ottieni la posizione iniziale dell'aereo
     x, y = start.row, start.col
 
-    # Resetta il punto di partenza originale
-    grid[x][y].reset()
+    draw_grid(WIN, rows, WIDTH-200)
+    # grid[x][y].reset()
 
-    # Animazione dell'aereo lungo il percorso
     for move, next_move in zip(plan, plan[1:]):
-        pygame.time.delay(50)  # Ritardo per l'animazione
+        pygame.time.delay(50)
 
-        # Resetta la cella precedente (solo se non è la base)
         if not grid[x][y].is_end():
             grid[x][y].reset()
 
@@ -369,17 +354,13 @@ def animate_airplane(start, plan, grid, rows):
             else:
                 grid[x][y].rotation = +90
 
-        # Imposta la nuova cella come start (aereo)
         grid[x][y].make_start()
 
-        # Ridisegna la mappa con l'aereo nella nuova posizione
-        WIN.blit(BACKGROUND_IMAGE, (0, 0))  # Ridisegna lo sfondo
-        draw(WIN, grid, rows, WIDTH)  # Disegna gli altri elementi
+        if background:
+            WIN.blit(background, (0, 0))
+        draw(WIN, grid, rows, WIDTH-200, background)
 
-        pygame.display.update()  # Aggiorna la finestra
-
-    # L'animazione è terminata, lascia l'aereo fermo sopra la base
-    print(f"L'aereo è arrivato alla base a ({x}, {y})")
+        pygame.display.update()
 
     pygame.display.update()
 
@@ -433,17 +414,16 @@ def load_from_file(filename):
     return grid, start, end, rows, barrier
 
 
-# Variabile per tracciare l'euristica selezionata
 selected_heuristic = "m"
 
 
-def make_plan(p, draw, win, grid, rows, width, search_algorithm):
+def make_plan(p, draw, win, grid, rows, width, search_algorithm, background):
     if isinstance(search_algorithm, ASTARPathFinder) or isinstance(search_algorithm, IDASTARPathFinder):
         plan = search_algorithm.solve(p, lambda: draw(
-            win, grid, rows, width), grid, selected_heuristic)
+            win, grid, rows, width, background), grid, selected_heuristic)
     else:
         plan = search_algorithm.solve(
-            p, lambda: draw(win, grid, rows, width), grid)
+            p, lambda: draw(win, grid, rows, width, background), grid)
 
     return plan
 
@@ -451,11 +431,9 @@ def make_plan(p, draw, win, grid, rows, width, search_algorithm):
 def update_selected_heuristic(event, search_algorithm):
     global selected_heuristic
 
-    # Controlla se un bottone è stato cliccato e aggiorna l'euristica
     heuristic_selected = manhattan.click(event, search_algorithm, "m")
     if heuristic_selected:
         selected_heuristic = heuristic_selected
-        # Deselect the other button
         chebyshev.change_text("chebyshev", bg="navy")
         euclidean.change_text("eucledian", bg="navy")
         blind.change_text("blind", bg="navy")
@@ -463,7 +441,6 @@ def update_selected_heuristic(event, search_algorithm):
     heuristic_selected = chebyshev.click(event, search_algorithm, "c")
     if heuristic_selected:
         selected_heuristic = heuristic_selected
-        # Deselect the other button
         manhattan.change_text("manhattan", bg="navy")
         euclidean.change_text("eucledian", bg="navy")
         blind.change_text("blind", bg="navy")
@@ -471,7 +448,6 @@ def update_selected_heuristic(event, search_algorithm):
     heuristic_selected = euclidean.click(event, search_algorithm, "e")
     if heuristic_selected:
         selected_heuristic = heuristic_selected
-        # Deselect the other button
         manhattan.change_text("manhattan", bg="navy")
         chebyshev.change_text("chebyshev", bg="navy")
         blind.change_text("blind", bg="navy")
@@ -479,7 +455,6 @@ def update_selected_heuristic(event, search_algorithm):
     heuristic_selected = blind.click(event, search_algorithm, "b")
     if heuristic_selected:
         selected_heuristic = heuristic_selected
-        # Deselect the other button
         manhattan.change_text("manhattan", bg="navy")
         chebyshev.change_text("chebyshev", bg="navy")
         euclidean.change_text("eucledian", bg="navy")
@@ -524,7 +499,7 @@ class Button:
                 if self.rect.collidepoint(x, y):
                     search_algorithm.heuristic = heuristic_type
                     self.change_text(self.feedback, bg="red")
-                    return heuristic_type  # Return the selected heuristic
+                    return heuristic_type
         return None
 
 
@@ -575,6 +550,7 @@ def main(width, rows, search_algorithm, filename=None):
     win = WIN
     start = None
     end = None
+    background = None
     ROWS = rows
     if search_algorithm == 'DFS':
         search_algorithm = DFSPathFinder(True)
@@ -587,7 +563,10 @@ def main(width, rows, search_algorithm, filename=None):
     elif search_algorithm == 'IDASTAR':
         search_algorithm = IDASTARPathFinder(True)
     if filename is not None:
-        grid, start, end, rows, wall = make_grid_from_file(filename, width)
+
+        grid, start, end, rows, wall, background = make_grid_from_file(
+            filename, width)
+
         for i in list(wall):
             grid[i[0]][i[1]].make_barrier()
     else:
@@ -596,7 +575,7 @@ def main(width, rows, search_algorithm, filename=None):
     run = True
 
     while run:
-        draw(win, grid, rows, width)
+        draw(win, grid, rows, width, background)
 
         for event in pygame.event.get():
             pygame.display.update()
@@ -642,7 +621,7 @@ def main(width, rows, search_algorithm, filename=None):
                                     (end.row, end.col), world)
                     now = time.time()
                     plan = make_plan(p, draw, win, grid, rows,
-                                     width, search_algorithm)
+                                     width, search_algorithm, background)
                     now = time.time() - now
                     print("Number of Expansion: {} in {} seconds".format(
                         search_algorithm.expanded, now))
@@ -650,8 +629,8 @@ def main(width, rows, search_algorithm, filename=None):
                         print(plan)
                         print("Cost of the plan is: {}".format(len(plan)))
                         mark_spots(start, grid, plan)
-                        animate_airplane(start, plan, grid, rows)
-                    draw(win, grid, rows, width)
+                        animate_truck(start, plan, grid, rows, background)
+                    draw(win, grid, rows, width, background)
                 if event.key == pygame.K_c:
                     start = None
                     end = None
