@@ -18,9 +18,6 @@ pygame.init()
 BASE_IMAGE = pygame.image.load("warehouse.png")
 BASE_SIZE = 3
 
-TRUCK_ICON = pygame.image.load("truck.png")
-TRUCK_SIZE = 3
-
 RED_TRANS = (255, 0, 0, 128)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
@@ -34,6 +31,23 @@ ORANGE = (255, 165, 0)
 GREY = (128, 128, 128)
 TURQUOISE = (64, 224, 208)
 TRANSPARENT = (0, 0, 0, 128)
+
+
+class Truck:
+    def __init__(self, truck_type="electric"):
+        self.type = truck_type
+        self.image = None
+        self.load_image()
+
+    def load_image(self):
+        if self.type == "diesel":
+            self.image = pygame.image.load("truck-diesel.png")
+        elif self.type == "electric":
+            self.image = pygame.image.load("truck.png")
+        return self.image
+
+
+truck = Truck("electric")
 
 
 class Spot:
@@ -157,12 +171,12 @@ class Spot:
                 win, PURPLE, (self.x, self.y, self.width, self.width))
 
         elif self.is_start():
-            airplane_pixel_size = TRUCK_SIZE * cell_size
-            scaled_airplane = pygame.transform.scale(
-                TRUCK_ICON, (airplane_pixel_size, airplane_pixel_size))
-            scaled_airplane = pygame.transform.rotate(
-                scaled_airplane, self.rotation)
-            win.blit(scaled_airplane, (self.x-cell_size, self.y-cell_size))
+            truck_pixel_size = 3 * cell_size
+            scaled_truck = pygame.transform.scale(
+                truck.load_image(), (truck_pixel_size, truck_pixel_size))
+            scaled_truck = pygame.transform.rotate(
+                scaled_truck, self.rotation)
+            win.blit(scaled_truck, (self.x-cell_size, self.y-cell_size))
 
         elif self.is_end():
             base_pixel_size = BASE_SIZE * cell_size
@@ -256,6 +270,8 @@ def draw(win, grid, rows, width, background=None):
     chebyshev.show()
     euclidean.show()
     blind.show()
+    electric.show()
+    diesel.show()
 
     pygame.display.update()
 
@@ -303,9 +319,8 @@ def mark_spots(start, grid, plan):
 
 def animate_truck(start, plan, grid, rows, background=None):
     cell_size = (WIDTH-200) // rows
-    airplane_pixel_size = TRUCK_SIZE * cell_size
-    scaled_airplane = pygame.transform.scale(
-        TRUCK_ICON, (airplane_pixel_size, airplane_pixel_size))
+    truck_pixel_size = 3 * cell_size
+    #  scaled_truck = pygame.transform.scale(truck.load_image(), (truck_pixel_size, truck_pixel_size) )
 
     for row in grid:
         for spot in row:
@@ -315,7 +330,6 @@ def animate_truck(start, plan, grid, rows, background=None):
     x, y = start.row, start.col
 
     draw_grid(WIN, rows, WIDTH-200)
-    # grid[x][y].reset()
 
     for move, next_move in zip(plan, plan[1:]):
         pygame.time.delay(50)
@@ -471,6 +485,7 @@ class Button:
         else:
             self.feedback = feedback
         self.change_text(text, bg)
+        self.name = text
 
     def change_text(self, text, bg="black"):
         self.text = self.font.render(text, 1, pygame.Color("White"))
@@ -501,6 +516,20 @@ class Button:
                     self.change_text(self.feedback, bg="red")
                     return heuristic_type
         return None
+
+    def click_truck(self, event, truck):
+        x, y = pygame.mouse.get_pos()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if pygame.mouse.get_pressed()[0]:
+                if self.rect.collidepoint(x, y):
+                    if self.name == "electric":
+                        truck.type = "electric"
+                        self.change_text(self.feedback, bg="green")
+                        diesel.change_text("diesel", bg="navy")
+                    elif self.name == "diesel":
+                        truck.type = "diesel"
+                        self.change_text(self.feedback, bg="green")
+                        electric.change_text("electric", bg="navy")
 
 
 save_map_button = Button(
@@ -537,6 +566,20 @@ blind = Button(
     font=20,
     bg="navy",
     feedback="blind <=")
+
+electric = Button(
+    "electric",
+    (WIDTH-200, 450),
+    font=20,
+    bg="navy",
+    feedback="electric <=")
+
+diesel = Button(
+    "diesel",
+    (WIDTH-200, 500),
+    font=20,
+    bg="navy",
+    feedback="diesel <=")
 
 clock = pygame.time.Clock()
 
@@ -583,6 +626,8 @@ def main(width, rows, search_algorithm, filename=None):
                 run = False
             save_map_button.click_save(event, grid, start, end)
             update_selected_heuristic(event, search_algorithm)
+            electric.click_truck(event, truck)
+            diesel.click_truck(event, truck)
 
             if pygame.mouse.get_pressed()[0]:  # LEFT
                 pos = pygame.mouse.get_pos()
