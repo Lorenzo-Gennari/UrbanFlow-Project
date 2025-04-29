@@ -275,6 +275,9 @@ def draw(win, grid, rows, width, background=None):
     map1.show()
     map2.show()
     map3.show()
+    astar.show()
+    idastar.show()
+    breathfs.show()
 
     pygame.display.update()
 
@@ -555,6 +558,27 @@ class Button:
                         map2.change_text("map 2", bg="navy")
                         return make_grid_from_file("maps/mappa-grande.json", WIDTH-200)
 
+    def click_algorithm(self, event):
+        x, y = pygame.mouse.get_pos()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if pygame.mouse.get_pressed()[0]:
+                if self.rect.collidepoint(x, y):
+                    if self.name == "A*":
+                        self.change_text(self.feedback, bg="orange")
+                        idastar.change_text("IDA*", bg="navy")
+                        breathfs.change_text("BRFS", bg="navy")
+                        return ASTARPathFinder(heuristics.manhattan, True)
+                    elif self.name == "IDA*":
+                        self.change_text(self.feedback, bg="orange")
+                        astar.change_text("A*", bg="navy")
+                        breathfs.change_text("BRFS", bg="navy")
+                        return IDASTARPathFinder(True)
+                    elif self.name == "BRFS":
+                        self.change_text(self.feedback, bg="orange")
+                        astar.change_text("A*", bg="navy")
+                        idastar.change_text("BRFS", bg="navy")
+                        return BRFSPathFinder(True)
+
 
 map1 = Button(
     "map 1",
@@ -577,44 +601,65 @@ map3 = Button(
     bg="navy",
     feedback="map 3 <=")
 
+astar = Button(
+    "A*",
+    (WIDTH-200, 150),
+    font=20,
+    bg="navy",
+    feedback="A* <=")
+
+idastar = Button(
+    "IDA*",
+    (WIDTH-200, 175),
+    font=20,
+    bg="navy",
+    feedback="IDA* <=")
+
+breathfs = Button(
+    "BRFS",
+    (WIDTH-200, 200),
+    font=20,
+    bg="navy",
+    feedback="BRFS <=")
+
 manhattan = Button(
     "manhattan",
-    (WIDTH-200, 150),
+    (WIDTH-200, 250),
     font=20,
     bg="navy",
     feedback="manhattan <=")
 
 chebyshev = Button(
     "chebyshev",
-    (WIDTH-200, 175),
+    (WIDTH-200, 275),
     font=20,
     bg="navy",
     feedback="chebyshev <=")
 
 euclidean = Button(
     "eucledian",
-    (WIDTH-200, 200),
+    (WIDTH-200, 300),
     font=20,
     bg="navy",
     feedback="eucledian <=")
 
 blind = Button(
     "blind",
-    (WIDTH-200, 225),
+    (WIDTH-200, 325),
     font=20,
     bg="navy",
     feedback="blind <=")
 
 electric = Button(
     "electric",
-    (WIDTH-200, 275),
+    (WIDTH-200, 375),
     font=20,
     bg="navy",
     feedback="electric <=")
 
 diesel = Button(
     "diesel",
-    (WIDTH-200, 300),
+    (WIDTH-200, 400),
     font=20,
     bg="navy",
     feedback="diesel <=")
@@ -683,6 +728,12 @@ def main(width, rows, search_algorithm, filename=None):
             if map3.click_map(event) is not None:
                 grid, start, end, rows, wall, background = map3.click_map(
                     event)
+            if astar.click_algorithm(event) is not None:
+                search_algorithm = astar.click_algorithm(event)
+            if idastar.click_algorithm(event) is not None:
+                search_algorithm = idastar.click_algorithm(event)
+            if breathfs.click_algorithm(event) is not None:
+                search_algorithm = breathfs.click_algorithm(event)
 
             if pygame.mouse.get_pressed()[0]:  # LEFT
                 pos = pygame.mouse.get_pos()
