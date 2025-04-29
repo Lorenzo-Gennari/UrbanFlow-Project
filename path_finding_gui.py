@@ -585,7 +585,7 @@ class Button:
                     elif self.name == "BRFS":
                         self.change_text(self.feedback, bg="orange")
                         astar.change_text("A*", bg="navy")
-                        idastar.change_text("BRFS", bg="navy")
+                        idastar.change_text("IDA*", bg="navy")
                         return BRFSPathFinder(True)
 
 
