@@ -25,7 +25,7 @@ class AStar(SearchAlgorithm):
         self.w = w
         super().__init__(view)
 
-    def solve(self, problem, draw, grid, he) -> list:
+    def solve(self, problem, draw, grid, he, truck) -> list:
         print(he)
         frontier = PriorityQueue()
         reached = set()
@@ -35,7 +35,7 @@ class AStar(SearchAlgorithm):
         reached.add(node.state)
         while not frontier.empty():
             node = frontier.get()
-            states = problem.getSuccessors(node.state)
+            states = problem.getSuccessors(node.state, truck)
             for state in states:
                 child_node = AstarNode(
                     state[1], node, state[0], 0, h.choose_heuristic(he, state[1], problem.goal))

@@ -18,7 +18,7 @@ class IDAStar(SearchAlgorithm):
         self.w = w
         super().__init__(view)
 
-    def solve(self, problem, draw, grid, he) -> list:
+    def solve(self, problem, draw, grid, he, truck) -> list:
         start_node = AstarNode(
             problem.init,
             None,
@@ -33,7 +33,7 @@ class IDAStar(SearchAlgorithm):
         while True:
             visited = set()
             next_bound = self._search(
-                start_node, bound, visited, problem, draw, grid, he)
+                start_node, bound, visited, problem, draw, grid, he, truck)
 
             if self.goal_node:
                 return self.extract_solution(self.goal_node)
@@ -41,7 +41,7 @@ class IDAStar(SearchAlgorithm):
                 return []
             bound = next_bound
 
-    def _search(self, node, bound, visited, problem, draw, grid, he):
+    def _search(self, node, bound, visited, problem, draw, grid, he, truck):
         if node.state in visited:
             return math.inf
         visited.add(node.state)
@@ -54,7 +54,7 @@ class IDAStar(SearchAlgorithm):
             return "found"
 
         min_threshold = math.inf
-        states = problem.getSuccessors(node.state)
+        states = problem.getSuccessors(node.state, truck)
 
         states.sort(key=lambda x: h.choose_heuristic(he, x[1], problem.goal))
 
@@ -69,7 +69,7 @@ class IDAStar(SearchAlgorithm):
             grid[succ_state[0]][succ_state[1]].make_closed()
 
             result = self._search(
-                child_node, bound, visited, problem, draw, grid, he)
+                child_node, bound, visited, problem, draw, grid, he, truck)
 
             if result == "found":
                 return "found"

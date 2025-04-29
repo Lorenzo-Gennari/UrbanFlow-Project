@@ -68,7 +68,7 @@ class Spot:
 
         self.rotation = -90
 
-        self.area = False
+        self.ztl = False
 
     def get_pos(self):
         return self.row, self.col
@@ -91,8 +91,8 @@ class Spot:
     def is_path(self):
         return self.path
 
-    def is_area(self):
-        return self.area
+    def is_ztl(self):
+        return self.ztl
 
     def reset(self):
         self.color = WHITE
@@ -102,7 +102,7 @@ class Spot:
         self.path = False
         self.start = False
         self.end = False
-        self.area = False
+        self.ztl = False
 
     def make_start(self):
         if not self.end:
@@ -128,11 +128,11 @@ class Spot:
             self.barrier = True
             self.color = BLACK
 
-    def make_area(self):
+    def make_ztl(self):
         if not self.end:
             self.reset()
-            self.area = True
-            self.color = RED_TRANS
+            self.ztl = True
+            self.color = RED
 
     def make_end(self):
         self.reset()
@@ -153,7 +153,7 @@ class Spot:
             s.fill(GREEN_TRANS)
             win.blit(s, (self.x, self.y))
 
-        elif self.is_area():
+        elif self.is_ztl():
             s = pygame.Surface((self.width, self.width), pygame.SRCALPHA)
             s.fill(RED_TRANS)
             win.blit(s, (self.x, self.y))
@@ -224,6 +224,10 @@ def make_grid_from_file(filename, width):
         except pygame.error as e:
             print(f"Errore nel caricare l'immagine di background: {e}")
 
+    ztl = set()
+    if 'ztl' in data:
+        ztl = {(i, j) for i, j in data['ztl']}
+
     for i in range(rows):
         grid.append([])
         for j in range(rows):
@@ -236,9 +240,11 @@ def make_grid_from_file(filename, width):
             elif (i, j) == end:
                 spot.make_end()
                 end = spot
+            elif (i, j) in ztl:
+                spot.make_ztl()
             grid[i].append(spot)
 
-    return grid, start, end, rows, barrier, background_image
+    return grid, start, end, rows, barrier, background_image, ztl
 
 
 def draw_grid(win, rows, width):
@@ -261,7 +267,13 @@ def draw(win, grid, rows, width, background=None):
 
     for row in grid:
         for spot in row:
-            if spot.is_start() or spot.is_end() or spot.is_barrier():
+            if spot.is_start():
+                spot.draw(win)
+            if spot.is_end():
+                spot.draw(win)
+            if spot.is_ztl():
+                spot.draw(win)
+            if spot.is_barrier():
                 spot.draw(win)
 
     draw_grid(win, rows, width)
@@ -324,10 +336,6 @@ def mark_spots(start, grid, plan):
 
 
 def animate_truck(start, plan, grid, rows, background=None):
-    cell_size = (WIDTH-200) // rows
-    truck_pixel_size = 3 * cell_size
-    #  scaled_truck = pygame.transform.scale(truck.load_image(), (truck_pixel_size, truck_pixel_size) )
-
     for row in grid:
         for spot in row:
             if spot.is_open() or spot.is_closed():
@@ -336,6 +344,7 @@ def animate_truck(start, plan, grid, rows, background=None):
     x, y = start.row, start.col
 
     draw_grid(WIN, rows, WIDTH-200)
+    draw(WIN, grid, rows, WIDTH-200, background)
 
     for move, next_move in zip(plan, plan[1:]):
         pygame.time.delay(50)
@@ -440,10 +449,10 @@ selected_heuristic = "m"
 def make_plan(p, draw, win, grid, rows, width, search_algorithm, background):
     if isinstance(search_algorithm, ASTARPathFinder) or isinstance(search_algorithm, IDASTARPathFinder):
         plan = search_algorithm.solve(p, lambda: draw(
-            win, grid, rows, width, background), grid, selected_heuristic)
+            win, grid, rows, width, background), grid, selected_heuristic, truck)
     else:
         plan = search_algorithm.solve(
-            p, lambda: draw(win, grid, rows, width, background), grid)
+            p, lambda: draw(win, grid, rows, width, background), grid, truck)
 
     return plan
 
@@ -720,13 +729,13 @@ def main(width, rows, search_algorithm, filename=None):
             electric.click_truck(event, truck)
             diesel.click_truck(event, truck)
             if map1.click_map(event) is not None:
-                grid, start, end, rows, wall, background = map1.click_map(
+                grid, start, end, rows, wall, background, ztl = map1.click_map(
                     event)
             if map2.click_map(event) is not None:
-                grid, start, end, rows, wall, background = map2.click_map(
+                grid, start, end, rows, wall, background, ztl = map2.click_map(
                     event)
             if map3.click_map(event) is not None:
-                grid, start, end, rows, wall, background = map3.click_map(
+                grid, start, end, rows, wall, background, ztl = map3.click_map(
                     event)
             if astar.click_algorithm(event) is not None:
                 search_algorithm = astar.click_algorithm(event)
@@ -767,7 +776,7 @@ def main(width, rows, search_algorithm, filename=None):
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and start and end:
-                    world = World(rows-1, rows-1, wall)
+                    world = World(rows-1, rows-1, wall, ztl)
                     p = PathFinding((start.row, start.col),
                                     (end.row, end.col), world)
                     now = time.time()

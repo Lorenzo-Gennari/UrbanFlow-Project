@@ -10,7 +10,7 @@ class DFS(SearchAlgorithm):
         Solver (_type_): This is an implementation for the Solver class
     """
 
-    def solve(self, problem, draw, grid) -> list:
+    def solve(self, problem, draw, grid, truck) -> list:
         node = Node(problem.init, None, None, 0)
         reached = set()
         reached.add(node.state)
@@ -22,7 +22,7 @@ class DFS(SearchAlgorithm):
             if problem.isGoal(node.state):
                 print("goal node: ", node.state)
                 return self.extract_solution(node)
-            states = problem.getSuccessors(node.state)
+            states = problem.getSuccessors(node.state, truck)
             for state in states:
                 child_node = Node(state[1], node, state[0], 0)
                 if child_node.state not in reached:

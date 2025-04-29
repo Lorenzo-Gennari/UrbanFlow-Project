@@ -14,7 +14,7 @@ class PathFinding(SearchProblem):
         self.world = world
         super().__init__(init, goal, [(a, 1) for a in self.actions])
 
-    def getSuccessors(self, state) -> set:
+    def getSuccessors(self, state, truck) -> set:
         succ = []
         for a in self.actions:
             if a == 'S':
@@ -50,7 +50,11 @@ class PathFinding(SearchProblem):
                 y = state[1]-1
                 next = (x, y)
             if next not in self.world.walls and self.isInTheLimits(next):
-                succ.append((a, next))
+                if truck.type == "diesel":
+                    if next not in self.world.ztl:
+                        succ.append((a, next))
+                else:
+                    succ.append((a, next))
         return succ
 
     def isInTheLimits(self, state):
