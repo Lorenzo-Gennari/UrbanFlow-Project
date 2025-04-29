@@ -272,6 +272,9 @@ def draw(win, grid, rows, width, background=None):
     blind.show()
     electric.show()
     diesel.show()
+    map1.show()
+    map2.show()
+    map3.show()
 
     pygame.display.update()
 
@@ -531,55 +534,98 @@ class Button:
                         self.change_text(self.feedback, bg="green")
                         electric.change_text("electric", bg="navy")
 
+    def click_map(self, event):
+        x, y = pygame.mouse.get_pos()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if pygame.mouse.get_pressed()[0]:
+                if self.rect.collidepoint(x, y):
+                    if self.name == "map 1":
+                        self.change_text(self.feedback, bg="purple")
+                        map2.change_text("map 2", bg="navy")
+                        map3.change_text("map 3", bg="navy")
+                        return make_grid_from_file("maps/mappa-città.json", WIDTH-200)
+                    elif self.name == "map 2":
+                        self.change_text(self.feedback, bg="purple")
+                        map1.change_text("map 1", bg="navy")
+                        map3.change_text("map 3", bg="navy")
+                        return make_grid_from_file("maps/mappa-città-inverted.json", WIDTH-200)
+                    elif self.name == "map 3":
+                        self.change_text(self.feedback, bg="purple")
+                        map1.change_text("map 1", bg="navy")
+                        map2.change_text("map 2", bg="navy")
+                        return make_grid_from_file("maps/mappa-grande.json", WIDTH-200)
 
-save_map_button = Button(
-    "Save Map",
+
+map1 = Button(
+    "map 1",
+    (WIDTH-200, 50),
+    font=20,
+    bg="navy",
+    feedback="map 1 <=")
+
+map2 = Button(
+    "map 2",
+    (WIDTH-200, 75),
+    font=20,
+    bg="navy",
+    feedback="map 2 <=")
+
+map3 = Button(
+    "map 3",
     (WIDTH-200, 100),
     font=20,
     bg="navy",
-    feedback="Saved")
+    feedback="map 3 <=")
 
 manhattan = Button(
     "manhattan",
-    (WIDTH-200, 200),
+    (WIDTH-200, 150),
     font=20,
     bg="navy",
     feedback="manhattan <=")
 
 chebyshev = Button(
     "chebyshev",
-    (WIDTH-200, 250),
+    (WIDTH-200, 175),
     font=20,
     bg="navy",
     feedback="chebyshev <=")
 
 euclidean = Button(
     "eucledian",
-    (WIDTH-200, 300),
+    (WIDTH-200, 200),
     font=20,
     bg="navy",
     feedback="eucledian <=")
 
 blind = Button(
     "blind",
-    (WIDTH-200, 350),
+    (WIDTH-200, 225),
     font=20,
     bg="navy",
     feedback="blind <=")
 
 electric = Button(
     "electric",
-    (WIDTH-200, 450),
+    (WIDTH-200, 275),
     font=20,
     bg="navy",
     feedback="electric <=")
 
 diesel = Button(
     "diesel",
-    (WIDTH-200, 500),
+    (WIDTH-200, 300),
     font=20,
     bg="navy",
     feedback="diesel <=")
+
+save_map_button = Button(
+    "Save Map",
+    (WIDTH-200, 700),
+    font=20,
+    bg="navy",
+    feedback="Saved")
+
 
 clock = pygame.time.Clock()
 
@@ -628,6 +674,15 @@ def main(width, rows, search_algorithm, filename=None):
             update_selected_heuristic(event, search_algorithm)
             electric.click_truck(event, truck)
             diesel.click_truck(event, truck)
+            if map1.click_map(event) is not None:
+                grid, start, end, rows, wall, background = map1.click_map(
+                    event)
+            if map2.click_map(event) is not None:
+                grid, start, end, rows, wall, background = map2.click_map(
+                    event)
+            if map3.click_map(event) is not None:
+                grid, start, end, rows, wall, background = map3.click_map(
+                    event)
 
             if pygame.mouse.get_pressed()[0]:  # LEFT
                 pos = pygame.mouse.get_pos()

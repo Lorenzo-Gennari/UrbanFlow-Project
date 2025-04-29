@@ -50,4 +50,4 @@ class AStar(SearchAlgorithm):
                         frontier.put(child_node)
             if node.parent is not None:
                 grid[node.state[0]][node.state[1]].make_closed()
-        draw()
+            draw()
