@@ -290,6 +290,7 @@ def draw(win, grid, rows, width, background=None):
     astar.show()
     idastar.show()
     breathfs.show()
+    all.show()
 
     pygame.display.update()
 
@@ -476,15 +477,27 @@ def load_from_file(filename):
 selected_heuristic = "m"
 
 
-def make_plan(p, draw, win, grid, rows, width, search_algorithm, background):
+def make_plan(p, draw, win, grid, rows, width, search_algorithm, background, he):
     if isinstance(search_algorithm, ASTARPathFinder) or isinstance(search_algorithm, IDASTARPathFinder):
         plan = search_algorithm.solve(p, lambda: draw(
-            win, grid, rows, width, background), grid, selected_heuristic, truck)
+            win, grid, rows, width, background), grid, he, truck)
     else:
         plan = search_algorithm.solve(
             p, lambda: draw(win, grid, rows, width, background), grid, truck)
 
     return plan
+
+
+def choose_plan(plans):
+    min = WIDTH*WIDTH
+    min_plan = None
+    min_type = None
+    for plan, ty in plans:
+        if len(plan) < min:
+            min = len(plan)
+            min_plan = plan
+            min_type = ty
+    return min_plan, min_type
 
 
 def update_selected_heuristic(event, search_algorithm):
@@ -618,6 +631,39 @@ class Button:
                         idastar.change_text("IDA*", bg="navy")
                         return BRFSPathFinder(True)
 
+    def click_all(self, event, start, end, world, draw, win, grid, rows, width, background):
+        x, y = pygame.mouse.get_pos()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if pygame.mouse.get_pressed()[0]:
+                if self.rect.collidepoint(x, y):
+                    self.change_text(self.feedback, bg="brown")
+                    heurs = ["m"]
+                    trucks = ["diesel", "electric"]
+                    algorithms = [ASTARPathFinder(
+                        heuristics.manhattan, True), IDASTARPathFinder(True)]
+                    p = PathFinding((start.row, start.col),
+                                    (end.row, end.col), world)
+                    plans = []
+                    for tru in trucks:
+                        truck.type = tru
+                        for he in heurs:
+                            selected_heuristic = he
+                            for alg in algorithms:
+                                plan = make_plan(p, draw, win, grid, rows,
+                                                 width, alg, background, selected_heuristic), truck.type
+                                plans.append(plan)
+                                print(plan)
+                        last_alg = BRFSPathFinder(True)
+                        last = make_plan(p, draw, win, grid, rows,
+                                         width, last_alg, background, selected_heuristic), truck.type
+                        plans.append(last)
+                        print(last)
+                    best, truck.type = choose_plan(plans)
+                    mark_spots(start, grid, best)
+                    animate_truck(start, best, grid, rows, background)
+                    self.change_text("DO ALL", bg="navy")
+                    return plans
+
 
 map1 = Button(
     "map 1",
@@ -703,6 +749,15 @@ diesel = Button(
     bg="navy",
     feedback="diesel <=")
 
+
+all = Button(
+    "DO ALL",
+    (WIDTH-200, 450),
+    font=20,
+    bg="navy",
+    feedback="DO ALL <=")
+
+
 save_map_button = Button(
     "Save Map",
     (WIDTH-200, 700),
@@ -774,6 +829,9 @@ def main(width, rows, search_algorithm, filename=None):
                 search_algorithm = idastar.click_algorithm(event)
             if breathfs.click_algorithm(event) is not None:
                 search_algorithm = breathfs.click_algorithm(event)
+            world = World(rows-1, rows-1, wall, ztl)
+            all.click_all(event, start, end, world,
+                          draw, win, grid, rows, width, background)
 
             if pygame.mouse.get_pressed()[0]:  # LEFT
                 pos = pygame.mouse.get_pos()
@@ -812,7 +870,7 @@ def main(width, rows, search_algorithm, filename=None):
                                     (end.row, end.col), world)
                     now = time.time()
                     plan = make_plan(p, draw, win, grid, rows,
-                                     width, search_algorithm, background)
+                                     width, search_algorithm, background, selected_heuristic)
                     now = time.time() - now
                     print("Number of Expansion: {} in {} seconds".format(
                         search_algorithm.expanded, now))
