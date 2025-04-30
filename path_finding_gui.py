@@ -346,6 +346,7 @@ def animate_truck(start, plan, grid, rows, background=None):
     draw_grid(WIN, rows, WIDTH-200)
     draw(WIN, grid, rows, WIDTH-200, background)
 
+    '''
     for move, next_move in zip(plan, plan[1:]):
         pygame.time.delay(50)
 
@@ -382,6 +383,35 @@ def animate_truck(start, plan, grid, rows, background=None):
                 grid[x][y].rotation = +45
             else:
                 grid[x][y].rotation = +90
+
+        grid[x][y].make_start()
+    '''
+    for move, next_move in zip(plan, plan[1:]):
+        pygame.time.delay(50)
+
+        if not grid[x][y].is_end():
+            grid[x][y].reset()
+
+        if move == 'N':
+            y += 1
+        elif move == 'S':
+            y -= 1
+        elif move == 'E':
+            x += 1
+        elif move == 'W':
+            x -= 1
+        elif move == 'NE':  # Diagonale Nord-Est
+            x += 1
+            y += 1
+        elif move == 'NW':  # Diagonale Nord-Ovest
+            x -= 1
+            y += 1
+        elif move == 'SE':  # Diagonale Sud-Est
+            x += 1
+            y -= 1
+        elif move == 'SW':  # Diagonale Sud-Ovest
+            x -= 1
+            y -= 1
 
         grid[x][y].make_start()
 
@@ -694,6 +724,7 @@ def main(width, rows, search_algorithm, filename=None):
     start = None
     end = None
     background = None
+    ztl = None
     ROWS = rows
     if search_algorithm == 'DFS':
         search_algorithm = DFSPathFinder(True)
