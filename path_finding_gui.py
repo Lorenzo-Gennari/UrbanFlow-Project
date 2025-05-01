@@ -606,13 +606,13 @@ class Button:
                         map1.change_text("map 1", bg="navy")
                         map3.change_text("map 3", bg="navy")
                         map4.change_text("map 4", bg="navy")
-                        return make_grid_from_file("maps/mappa-città-inverted.json", WIDTH-200)
+                        return make_grid_from_file("maps/mappa-grande-3.json", WIDTH-200)
                     elif self.name == "map 3":
                         self.change_text(self.feedback, bg="purple")
                         map1.change_text("map 1", bg="navy")
                         map2.change_text("map 2", bg="navy")
                         map4.change_text("map 4", bg="navy")
-                        return make_grid_from_file("maps/mappa-grande.json", WIDTH-200)
+                        return make_grid_from_file("maps/mappa-grande-4.json", WIDTH-200)
                     elif self.name == "map 4":
                         self.change_text(self.feedback, bg="purple")
                         map1.change_text("map 1", bg="navy")
