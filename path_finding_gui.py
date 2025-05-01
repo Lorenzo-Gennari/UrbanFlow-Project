@@ -287,6 +287,7 @@ def draw(win, grid, rows, width, background=None):
     map1.show()
     map2.show()
     map3.show()
+    map4.show()
     astar.show()
     idastar.show()
     breathfs.show()
@@ -598,17 +599,26 @@ class Button:
                         self.change_text(self.feedback, bg="purple")
                         map2.change_text("map 2", bg="navy")
                         map3.change_text("map 3", bg="navy")
+                        map4.change_text("map 4", bg="navy")
                         return make_grid_from_file("maps/mappa-città.json", WIDTH-200)
                     elif self.name == "map 2":
                         self.change_text(self.feedback, bg="purple")
                         map1.change_text("map 1", bg="navy")
                         map3.change_text("map 3", bg="navy")
+                        map4.change_text("map 4", bg="navy")
                         return make_grid_from_file("maps/mappa-città-inverted.json", WIDTH-200)
                     elif self.name == "map 3":
                         self.change_text(self.feedback, bg="purple")
                         map1.change_text("map 1", bg="navy")
                         map2.change_text("map 2", bg="navy")
+                        map4.change_text("map 4", bg="navy")
                         return make_grid_from_file("maps/mappa-grande.json", WIDTH-200)
+                    elif self.name == "map 4":
+                        self.change_text(self.feedback, bg="purple")
+                        map1.change_text("map 1", bg="navy")
+                        map2.change_text("map 2", bg="navy")
+                        map3.change_text("map 3", bg="navy")
+                        return make_grid_from_file("maps/mappa-grande-2.json", WIDTH-200)
 
     def click_algorithm(self, event):
         x, y = pygame.mouse.get_pos()
@@ -667,24 +677,31 @@ class Button:
 
 map1 = Button(
     "map 1",
-    (WIDTH-200, 50),
+    (WIDTH-200, 25),
     font=20,
     bg="navy",
     feedback="map 1 <=")
 
 map2 = Button(
     "map 2",
-    (WIDTH-200, 75),
+    (WIDTH-200, 50),
     font=20,
     bg="navy",
     feedback="map 2 <=")
 
 map3 = Button(
     "map 3",
-    (WIDTH-200, 100),
+    (WIDTH-200, 75),
     font=20,
     bg="navy",
     feedback="map 3 <=")
+
+map4 = Button(
+    "map 4",
+    (WIDTH-200, 100),
+    font=20,
+    bg="navy",
+    feedback="map 4 <=")
 
 astar = Button(
     "A*",
@@ -822,6 +839,9 @@ def main(width, rows, search_algorithm, filename=None):
                     event)
             if map3.click_map(event) is not None:
                 grid, start, end, rows, wall, background, ztl = map3.click_map(
+                    event)
+            if map4.click_map(event) is not None:
+                grid, start, end, rows, wall, background, ztl = map4.click_map(
                     event)
             if astar.click_algorithm(event) is not None:
                 search_algorithm = astar.click_algorithm(event)
