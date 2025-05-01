@@ -30,7 +30,7 @@ PURPLE = (128, 0, 128)
 ORANGE = (255, 165, 0)
 GREY = (128, 128, 128)
 TURQUOISE = (64, 224, 208)
-TRANSPARENT = (0, 0, 0, 128)
+TRANSPARENT = (0, 0, 0, 0)
 
 
 class Truck:
@@ -150,7 +150,7 @@ class Spot:
 
         if self.is_barrier():
             s = pygame.Surface((self.width, self.width), pygame.SRCALPHA)
-            s.fill(GREEN_TRANS)
+            s.fill(GREEN)
             win.blit(s, (self.x, self.y))
 
         elif self.is_ztl():
@@ -288,6 +288,7 @@ def draw(win, grid, rows, width, background=None):
     map2.show()
     map3.show()
     map4.show()
+    map5.show()
     astar.show()
     idastar.show()
     breathfs.show()
@@ -600,25 +601,36 @@ class Button:
                         map2.change_text("map 2", bg="navy")
                         map3.change_text("map 3", bg="navy")
                         map4.change_text("map 4", bg="navy")
+                        map5.change_text("map 5", bg="navy")
                         return make_grid_from_file("maps/mappa-città.json", WIDTH-200)
                     elif self.name == "map 2":
                         self.change_text(self.feedback, bg="purple")
                         map1.change_text("map 1", bg="navy")
                         map3.change_text("map 3", bg="navy")
                         map4.change_text("map 4", bg="navy")
-                        return make_grid_from_file("maps/mappa-grande-3.json", WIDTH-200)
+                        map5.change_text("map 5", bg="navy")
+                        return make_grid_from_file("maps/mappa-grande-2.json", WIDTH-200)
                     elif self.name == "map 3":
                         self.change_text(self.feedback, bg="purple")
                         map1.change_text("map 1", bg="navy")
                         map2.change_text("map 2", bg="navy")
                         map4.change_text("map 4", bg="navy")
-                        return make_grid_from_file("maps/mappa-grande-4.json", WIDTH-200)
+                        map5.change_text("map 5", bg="navy")
+                        return make_grid_from_file("maps/mappa-grande-3.json", WIDTH-200)
                     elif self.name == "map 4":
                         self.change_text(self.feedback, bg="purple")
                         map1.change_text("map 1", bg="navy")
                         map2.change_text("map 2", bg="navy")
                         map3.change_text("map 3", bg="navy")
-                        return make_grid_from_file("maps/mappa-grande-2.json", WIDTH-200)
+                        map5.change_text("map 5", bg="navy")
+                        return make_grid_from_file("maps/mappa-grande-4.json", WIDTH-200)
+                    elif self.name == "map 5":
+                        self.change_text(self.feedback, bg="purple")
+                        map1.change_text("map 1", bg="navy")
+                        map2.change_text("map 2", bg="navy")
+                        map3.change_text("map 3", bg="navy")
+                        map4.change_text("map 4", bg="navy")
+                        return make_grid_from_file("maps/mappa-grande-5.json", WIDTH-200)
 
     def click_algorithm(self, event):
         x, y = pygame.mouse.get_pos()
@@ -677,31 +689,38 @@ class Button:
 
 map1 = Button(
     "map 1",
-    (WIDTH-200, 25),
+    (WIDTH-200, 15),
     font=20,
     bg="navy",
     feedback="map 1 <=")
 
 map2 = Button(
     "map 2",
-    (WIDTH-200, 50),
+    (WIDTH-200, 40),
     font=20,
     bg="navy",
     feedback="map 2 <=")
 
 map3 = Button(
     "map 3",
-    (WIDTH-200, 75),
+    (WIDTH-200, 65),
     font=20,
     bg="navy",
     feedback="map 3 <=")
 
 map4 = Button(
     "map 4",
-    (WIDTH-200, 100),
+    (WIDTH-200, 90),
     font=20,
     bg="navy",
     feedback="map 4 <=")
+
+map5 = Button(
+    "map 5",
+    (WIDTH-200, 115),
+    font=20,
+    bg="navy",
+    feedback="map 5 <=")
 
 astar = Button(
     "A*",
@@ -843,6 +862,9 @@ def main(width, rows, search_algorithm, filename=None):
             if map4.click_map(event) is not None:
                 grid, start, end, rows, wall, background, ztl = map4.click_map(
                     event)
+            if map5.click_map(event) is not None:
+                grid, start, end, rows, wall, background, ztl = map5.click_map(
+                    event)
             if astar.click_algorithm(event) is not None:
                 search_algorithm = astar.click_algorithm(event)
             if idastar.click_algorithm(event) is not None:
@@ -880,7 +902,7 @@ def main(width, rows, search_algorithm, filename=None):
                         start = None
                     elif spot == end:
                         end = None
-                    elif spot.is_barrier() or spot.is_area():
+                    elif spot.is_barrier():
                         wall.remove((row, col))
 
             if event.type == pygame.KEYDOWN:
