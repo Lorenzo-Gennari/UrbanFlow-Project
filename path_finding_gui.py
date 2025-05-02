@@ -150,7 +150,7 @@ class Spot:
 
         if self.is_barrier():
             s = pygame.Surface((self.width, self.width), pygame.SRCALPHA)
-            s.fill(TRANSPARENT)
+            s.fill(GREEN)
             win.blit(s, (self.x, self.y))
 
         elif self.is_ztl():
@@ -276,7 +276,7 @@ def draw(win, grid, rows, width, background=None):
             if spot.is_barrier():
                 spot.draw(win)
 
-    # draw_grid(win, rows, width)
+    draw_grid(win, rows, width)
     save_map_button.show()
     manhattan.show()
     chebyshev.show()
@@ -434,12 +434,15 @@ def mark_expanded(exp, grid):
 
 def save_to_file(grid, start, end, filename="temp.json"):
     barrier = list()
+    ztl = list()
     for x in grid:
         for spot in x:
             if spot.is_barrier():
                 barrier.append((spot.row, spot.col))
+            if spot.is_ztl():
+                ztl.append((spot.row, spot.col))
     res = {"rows": len(grid), "start": (start.row, start.col),
-           "end": (end.row, end.col), "barrier": barrier}
+           "end": (end.row, end.col), "barrier": barrier, "ztl": ztl}
     data = json.dumps(res, indent=4)
     with open(filename, "w") as data_file:
         data_file.write(data)
@@ -815,7 +818,7 @@ def main(width, rows, search_algorithm, filename=None):
     start = None
     end = None
     background = None
-    ztl = None
+    ztl = set()
     ROWS = rows
     if search_algorithm == 'DFS':
         search_algorithm = DFSPathFinder(True)
@@ -889,8 +892,10 @@ def main(width, rows, search_algorithm, filename=None):
                         end.make_end()
 
                     elif spot != end and spot != start:
-                        spot.make_barrier()
-                        wall.add((row, col))
+                        # spot.make_barrier()
+                        # wall.add((row, col))
+                        spot.make_ztl()
+                        ztl.add((row, col))
 
             elif pygame.mouse.get_pressed()[2]:  # RIGHT
                 pos = pygame.mouse.get_pos()
