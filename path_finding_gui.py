@@ -150,7 +150,7 @@ class Spot:
 
         if self.is_barrier():
             s = pygame.Surface((self.width, self.width), pygame.SRCALPHA)
-            s.fill(GREEN)
+            s.fill(TRANSPARENT)
             win.blit(s, (self.x, self.y))
 
         elif self.is_ztl():
@@ -276,7 +276,7 @@ def draw(win, grid, rows, width, background=None):
             if spot.is_barrier():
                 spot.draw(win)
 
-    draw_grid(win, rows, width)
+    # draw_grid(win, rows, width)
     save_map_button.show()
     manhattan.show()
     chebyshev.show()
