@@ -4,7 +4,6 @@ import pygame
 import json
 from path_finding import PathFinding
 from ASTAR import AStar as ASTARPathFinder
-from DFS import DFS as DFSPathFinder
 from BRFS import BrFS as BRFSPathFinder
 from IDASTAR import IDAStar as IDASTARPathFinder
 import heuristics
@@ -20,7 +19,7 @@ total_cost = 0
 expanded_nodes = 0
 elapsed_time = 0
 
-BASE_IMAGE = pygame.image.load("warehouse.png")
+BASE_IMAGE = pygame.image.load("img/warehouse.png")
 BASE_SIZE = 3
 
 RED_TRANS = (255, 0, 0, 128)
@@ -46,9 +45,9 @@ class Truck:
 
     def load_image(self):
         if self.type == "diesel":
-            self.image = pygame.image.load("truck-diesel.png")
+            self.image = pygame.image.load("img/truck-diesel.png")
         elif self.type == "electric":
-            self.image = pygame.image.load("truck.png")
+            self.image = pygame.image.load("img/truck.png")
         return self.image
 
 
@@ -575,14 +574,12 @@ class Button:
 
     def change_text(self, text, bg="black"):
         self.text = self.font.render(text, 1, pygame.Color("White"))
-        print(self.text.get_size())
         self.size = (130, 25)
         self.surface = pygame.Surface(self.size, pygame.SRCALPHA)
         self.rect = pygame.Rect(
             self.x, self.y, self.size[0], self.size[1])
         pygame.draw.rect(self.surface, pygame.Color(
             bg), (0, 0, self.size[0], self.size[1]), border_radius=self.border_radius)
-        # self.surface.fill(bg)
         self.surface.blit(self.text, (10, 3))
 
     def show(self):
@@ -823,7 +820,7 @@ all = Button(
     feedback="DO ALL")
 
 save_map_button = Button(
-    "Save Map",
+    "AVVIA",
     ((WIDTH-200)+20, 770),
     font=30,
     bg="navy",
@@ -846,12 +843,8 @@ def main(width, rows, search_algorithm, filename=None):
     background = None
     ztl = set()
     ROWS = rows
-    if search_algorithm == 'DFS':
-        search_algorithm = DFSPathFinder(True)
-    elif search_algorithm == 'ASTAR':
+    if search_algorithm == 'ASTAR':
         search_algorithm = ASTARPathFinder(heuristics.manhattan, True)
-    elif search_algorithm == 'ASTARW4':
-        search_algorithm = ASTARPathFinder(heuristics.manhattan, True, w=4)
     elif search_algorithm == 'BRFS':
         search_algorithm = BRFSPathFinder(True)
     elif search_algorithm == 'IDASTAR':
@@ -918,10 +911,10 @@ def main(width, rows, search_algorithm, filename=None):
                         end.make_end()
 
                     elif spot != end and spot != start:
-                        # spot.make_barrier()
-                        # wall.add((row, col))
-                        spot.make_ztl()
-                        ztl.add((row, col))
+                        spot.make_barrier()
+                        wall.add((row, col))
+                        # spot.make_ztl()
+                        #  ztl.add((row, col))
 
             elif pygame.mouse.get_pressed()[2]:  # RIGHT
                 pos = pygame.mouse.get_pos()
