@@ -691,12 +691,13 @@ class Button:
                         return BRFSPathFinder(True)
 
     def click_all(self, event, start, end, world, draw, win, grid, rows, width, background):
+        global total_cost, expanded_nodes, elapsed_time
         x, y = pygame.mouse.get_pos()
         if event.type == pygame.MOUSEBUTTONDOWN:
             if pygame.mouse.get_pressed()[0]:
                 if self.rect.collidepoint(x, y):
                     self.change_text(self.feedback, bg="brown")
-                    heurs = ["m"]
+                    heurs = ["m", "c", "e", "b"]
                     trucks = ["diesel", "electric"]
                     algorithms = [ASTARPathFinder(
                         heuristics.manhattan, True), IDASTARPathFinder(True)]
@@ -708,15 +709,25 @@ class Button:
                         for he in heurs:
                             selected_heuristic = he
                             for alg in algorithms:
+                                now = time.time()
                                 plan = make_plan(p, draw, win, grid, rows,
                                                  width, alg, background, selected_heuristic), truck.type
+                                now = time.time() - now
                                 plans.append(plan)
                                 print(plan)
+                                total_cost = len(plan[0])
+                                expanded_nodes = alg.expanded
+                                elapsed_time = now*1000
                         last_alg = BRFSPathFinder(True)
+                        now = time.time()
                         last = make_plan(p, draw, win, grid, rows,
                                          width, last_alg, background, selected_heuristic), truck.type
+                        now = time.time() - now
                         plans.append(last)
                         print(last)
+                        total_cost = len(last[0])
+                        expanded_nodes = last_alg.expanded
+                        elapsed_time = now*1000
                     best, truck.type = choose_plan(plans)
                     mark_spots(start, grid, best)
                     animate_truck(start, best, grid, rows, background)
