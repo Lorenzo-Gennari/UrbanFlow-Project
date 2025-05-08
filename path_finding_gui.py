@@ -15,6 +15,11 @@ WIN = pygame.display.set_mode((WIDTH, WIDTH))
 pygame.display.set_caption("Search Algorithm")
 pygame.init()
 
+FONT1 = pygame.font.SysFont("georgia", 21)
+total_cost = 0
+expanded_nodes = 0
+elapsed_time = 0
+
 BASE_IMAGE = pygame.image.load("warehouse.png")
 BASE_SIZE = 3
 
@@ -255,6 +260,23 @@ def draw_grid(win, rows, width):
             pygame.draw.line(win, GREY, (j * gap, 0), (j * gap, width))
 
 
+def draw_bar():
+    global total_cost, expanded_nodes, elapsed_time
+
+    title = FONT1.render("UrbanFlow", True, (0, 0, 0))
+    WIN.blit(title, ((WIDTH-200) + 20, 50))
+
+    cost_text = FONT1.render(f"Costo Totale: {total_cost}", True, (0, 0, 0))
+    WIN.blit(cost_text, ((WIDTH-200) + 20, 90))
+
+    nodes_text = FONT1.render(
+        f"Nodi Espansi: {expanded_nodes}", True, (0, 0, 0))
+    WIN.blit(nodes_text, ((WIDTH-200) + 20, 115))
+
+    time_text = FONT1.render(f"Tempo: {elapsed_time:.0f}ms", True, (0, 0, 0))
+    WIN.blit(time_text, ((WIDTH-200) + 20, 140))
+
+
 def draw(win, grid, rows, width, background=None):
     win.fill(WHITE)
     if background:
@@ -293,6 +315,7 @@ def draw(win, grid, rows, width, background=None):
     idastar.show()
     breathfs.show()
     all.show()
+    draw_bar()
 
     pygame.display.update()
 
@@ -421,7 +444,6 @@ def animate_truck(start, plan, grid, rows, background=None):
         if background:
             WIN.blit(background, (0, 0))
         draw(WIN, grid, rows, WIDTH-200, background)
-
         pygame.display.update()
 
     pygame.display.update()
@@ -540,23 +562,28 @@ def update_selected_heuristic(event, search_algorithm):
 class Button:
     """Create a button, then blit the surface in the while loop"""
 
-    def __init__(self, text,  pos, font, bg="black", feedback=""):
+    def __init__(self, text,  pos, font, bg="black", feedback="", border_radius=10):
         self.x, self.y = pos
-        self.font = pygame.font.SysFont("Arial", font)
+        self.font = pygame.font.SysFont("72 black", font)
         if feedback == "":
             self.feedback = "text"
         else:
             self.feedback = feedback
+        self.border_radius = border_radius
         self.change_text(text, bg)
         self.name = text
 
     def change_text(self, text, bg="black"):
         self.text = self.font.render(text, 1, pygame.Color("White"))
-        self.size = self.text.get_size()
-        self.surface = pygame.Surface(self.size)
-        self.surface.fill(bg)
-        self.surface.blit(self.text, (0, 0))
-        self.rect = pygame.Rect(self.x, self.y, self.size[0], self.size[1])
+        print(self.text.get_size())
+        self.size = (130, 25)
+        self.surface = pygame.Surface(self.size, pygame.SRCALPHA)
+        self.rect = pygame.Rect(
+            self.x, self.y, self.size[0], self.size[1])
+        pygame.draw.rect(self.surface, pygame.Color(
+            bg), (0, 0, self.size[0], self.size[1]), border_radius=self.border_radius)
+        # self.surface.fill(bg)
+        self.surface.blit(self.text, (10, 3))
 
     def show(self):
         WIN.blit(self.surface, (self.x, self.y))
@@ -692,115 +719,113 @@ class Button:
 
 map1 = Button(
     "map 1",
-    (WIDTH-200, 15),
-    font=20,
+    ((WIDTH-200)+20, 220),
+    font=30,
     bg="navy",
-    feedback="map 1 <=")
+    feedback="map 1")
 
 map2 = Button(
     "map 2",
-    (WIDTH-200, 40),
-    font=20,
+    ((WIDTH-200)+20, 250),
+    font=30,
     bg="navy",
-    feedback="map 2 <=")
+    feedback="map 2")
 
 map3 = Button(
     "map 3",
-    (WIDTH-200, 65),
-    font=20,
+    ((WIDTH-200)+20, 280),
+    font=30,
     bg="navy",
-    feedback="map 3 <=")
+    feedback="map 3")
 
 map4 = Button(
     "map 4",
-    (WIDTH-200, 90),
-    font=20,
+    ((WIDTH-200)+20, 310),
+    font=30,
     bg="navy",
-    feedback="map 4 <=")
+    feedback="map 4")
 
 map5 = Button(
     "map 5",
-    (WIDTH-200, 115),
-    font=20,
+    ((WIDTH-200)+20, 340),
+    font=30,
     bg="navy",
-    feedback="map 5 <=")
+    feedback="map 5")
 
 astar = Button(
     "A*",
-    (WIDTH-200, 150),
-    font=20,
+    ((WIDTH-200)+20, 390),
+    font=30,
     bg="navy",
-    feedback="A* <=")
+    feedback="A*")
 
 idastar = Button(
     "IDA*",
-    (WIDTH-200, 175),
-    font=20,
+    ((WIDTH-200)+20, 420),
+    font=30,
     bg="navy",
-    feedback="IDA* <=")
+    feedback="IDA*")
 
 breathfs = Button(
     "BRFS",
-    (WIDTH-200, 200),
-    font=20,
+    ((WIDTH-200)+20, 450),
+    font=30,
     bg="navy",
-    feedback="BRFS <=")
+    feedback="BRFS")
 
 manhattan = Button(
     "manhattan",
-    (WIDTH-200, 250),
-    font=20,
+    ((WIDTH-200)+20, 500),
+    font=30,
     bg="navy",
-    feedback="manhattan <=")
+    feedback="manhattan")
 
 chebyshev = Button(
     "chebyshev",
-    (WIDTH-200, 275),
-    font=20,
+    ((WIDTH-200)+20, 530),
+    font=30,
     bg="navy",
-    feedback="chebyshev <=")
+    feedback="chebyshev")
 
 euclidean = Button(
     "eucledian",
-    (WIDTH-200, 300),
-    font=20,
+    ((WIDTH-200)+20, 560),
+    font=30,
     bg="navy",
-    feedback="eucledian <=")
+    feedback="eucledian")
 
 blind = Button(
     "blind",
-    (WIDTH-200, 325),
-    font=20,
+    ((WIDTH-200)+20, 590),
+    font=30,
     bg="navy",
-    feedback="blind <=")
+    feedback="blind")
 
 electric = Button(
     "electric",
-    (WIDTH-200, 375),
-    font=20,
+    ((WIDTH-200)+20, 640),
+    font=30,
     bg="navy",
-    feedback="electric <=")
+    feedback="electric")
 
 diesel = Button(
     "diesel",
-    (WIDTH-200, 400),
-    font=20,
+    ((WIDTH-200)+20, 670),
+    font=30,
     bg="navy",
-    feedback="diesel <=")
-
+    feedback="diesel")
 
 all = Button(
     "DO ALL",
-    (WIDTH-200, 450),
-    font=20,
+    ((WIDTH-200)+20, 720),
+    font=30,
     bg="navy",
-    feedback="DO ALL <=")
-
+    feedback="DO ALL")
 
 save_map_button = Button(
     "Save Map",
-    (WIDTH-200, 700),
-    font=20,
+    ((WIDTH-200)+20, 770),
+    font=30,
     bg="navy",
     feedback="Saved")
 
@@ -814,6 +839,7 @@ clock = pygame.time.Clock()
 @click.option('-s', '--search_algorithm', default="ASTAR", help="Search algorithm to be used")
 @click.option('-f', '--filename', default=None, help="Initialize map with data from file")
 def main(width, rows, search_algorithm, filename=None):
+    global total_cost, expanded_nodes, elapsed_time
     win = WIN
     start = None
     end = None
@@ -923,6 +949,9 @@ def main(width, rows, search_algorithm, filename=None):
                         search_algorithm.expanded, now))
                     if plan is not None:
                         print(plan)
+                        total_cost = len(plan)
+                        expanded_nodes = search_algorithm.expanded
+                        elapsed_time = now*1000
                         print("Cost of the plan is: {}".format(len(plan)))
                         mark_spots(start, grid, plan)
                         animate_truck(start, plan, grid, rows, background)
