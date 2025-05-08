@@ -263,17 +263,17 @@ def draw_bar():
     global total_cost, expanded_nodes, elapsed_time
 
     title = FONT1.render("UrbanFlow", True, (0, 0, 0))
-    WIN.blit(title, ((WIDTH-200) + 20, 50))
+    WIN.blit(title, ((WIDTH-200) + 10, 50))
 
     cost_text = FONT1.render(f"Costo Totale: {total_cost}", True, (0, 0, 0))
-    WIN.blit(cost_text, ((WIDTH-200) + 20, 90))
+    WIN.blit(cost_text, ((WIDTH-200) + 10, 90))
 
     nodes_text = FONT1.render(
         f"Nodi Espansi: {expanded_nodes}", True, (0, 0, 0))
-    WIN.blit(nodes_text, ((WIDTH-200) + 20, 115))
+    WIN.blit(nodes_text, ((WIDTH-200) + 10, 115))
 
     time_text = FONT1.render(f"Tempo: {elapsed_time:.0f}ms", True, (0, 0, 0))
-    WIN.blit(time_text, ((WIDTH-200) + 20, 140))
+    WIN.blit(time_text, ((WIDTH-200) + 10, 140))
 
 
 def draw(win, grid, rows, width, background=None):
@@ -298,7 +298,7 @@ def draw(win, grid, rows, width, background=None):
                 spot.draw(win)
 
     #  draw_grid(win, rows, width)
-    save_map_button.show()
+    avvia.show()
     manhattan.show()
     chebyshev.show()
     euclidean.show()
@@ -594,6 +594,16 @@ class Button:
                         save_to_file(grid, start, end, "tempmap.json")
                         self.change_text(self.feedback, bg="red")
 
+    def click_avvia(self, event):
+        x, y = pygame.mouse.get_pos()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if pygame.mouse.get_pressed()[0]:
+                if self.rect.collidepoint(x, y):
+                    self.change_text(self.feedback, bg="cyan")
+                    return True
+        self.change_text(self.feedback, bg="navy")
+        return False
+
     def click(self, event, search_algorithm, heuristic_type):
         x, y = pygame.mouse.get_pos()
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -819,12 +829,12 @@ all = Button(
     bg="navy",
     feedback="DO ALL")
 
-save_map_button = Button(
+avvia = Button(
     "AVVIA",
     ((WIDTH-200)+20, 770),
     font=30,
     bg="navy",
-    feedback="Saved")
+    feedback="AVVIA")
 
 
 clock = pygame.time.Clock()
@@ -868,7 +878,6 @@ def main(width, rows, search_algorithm, filename=None):
             pygame.display.update()
             if event.type == pygame.QUIT:
                 run = False
-            save_map_button.click_save(event, grid, start, end)
             update_selected_heuristic(event, search_algorithm)
             electric.click_truck(event, truck)
             diesel.click_truck(event, truck)
@@ -929,8 +938,8 @@ def main(width, rows, search_algorithm, filename=None):
                     elif spot.is_barrier():
                         wall.remove((row, col))
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and start and end:
+            if avvia.click_avvia(event) or event.type == pygame.KEYDOWN:
+                if avvia.click_avvia(event) or event.key == pygame.K_SPACE and start and end:
                     world = World(rows-1, rows-1, wall, ztl)
                     p = PathFinding((start.row, start.col),
                                     (end.row, end.col), world)
@@ -949,6 +958,7 @@ def main(width, rows, search_algorithm, filename=None):
                         mark_spots(start, grid, plan)
                         animate_truck(start, plan, grid, rows, background)
                     draw(win, grid, rows, width, background)
+            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_c:
                     start = None
                     end = None
